@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
     </script>
     <style>
-        /* ========== БАЗА (такая же как у EURS) ========== */
+        /* ========== БАЗА ========== */
         * {
             margin: 0;
             padding: 0;
@@ -38,6 +38,7 @@
             color: var(--text);
             line-height: 1.6;
             overflow-x: hidden;
+            padding-bottom: 110px;
         }
         .container {
             max-width: 1200px;
@@ -168,25 +169,47 @@
                 opacity: 0.02;
             }
         }
-        .ticker {
+
+        /* ============================================================
+           ★★★ ДВЕ БЕГУЩИЕ СТРОКИ ★★★
+           ============================================================ */
+        .ticker-container {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(212, 168, 67, 0.12);
-            border-top: 1px solid var(--border);
-            padding: 8px 0;
             z-index: 999;
+            display: flex;
+            flex-direction: column;
+        }
+        .ticker {
             overflow: hidden;
+            padding: 6px 0;
             backdrop-filter: blur(6px);
+            border-top: 1px solid var(--border);
+        }
+        .ticker-platts {
+            background: rgba(10, 14, 23, 0.95);
+            border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+        }
+        .ticker-usds {
+            background: rgba(212, 168, 67, 0.08);
         }
         .ticker-track {
             display: flex;
             gap: 60px;
             white-space: nowrap;
-            animation: ticker-scroll 28s linear infinite;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: var(--gold-light);
+            animation: ticker-scroll 35s linear infinite;
+        }
+        .ticker-platts .ticker-track {
+            color: #4fc3f7;
+            font-weight: 500;
+        }
+        .ticker-usds .ticker-track {
+            color: var(--gold-light);
+            font-weight: 600;
         }
         @keyframes ticker-scroll {
             0% {
@@ -196,6 +219,7 @@
                 transform: translateX(-100%);
             }
         }
+
         /* ========== ШАПКА ========== */
         .header {
             background: rgba(10, 14, 23, 0.92);
@@ -790,7 +814,7 @@
         /* ========== ИИ-ЧАТ ========== */
         .ai-chat {
             position: fixed;
-            bottom: 100px;
+            bottom: 120px;
             right: 24px;
             width: 380px;
             max-width: calc(100vw - 40px);
@@ -949,7 +973,7 @@
         }
         .ai-chat-toggle {
             position: fixed;
-            bottom: 30px;
+            bottom: 50px;
             right: 24px;
             width: 60px;
             height: 60px;
@@ -987,6 +1011,9 @@
             }
         }
         @media (max-width: 768px) {
+            body {
+                padding-bottom: 90px;
+            }
             .nav {
                 display: none;
                 position: absolute;
@@ -1026,7 +1053,7 @@
             }
             .ai-chat {
                 right: 12px;
-                bottom: 80px;
+                bottom: 100px;
                 width: calc(100vw - 24px);
             }
             .ai-chat-toggle {
@@ -1034,7 +1061,7 @@
                 height: 52px;
                 font-size: 1.6rem;
                 right: 16px;
-                bottom: 20px;
+                bottom: 40px;
             }
             .fintech-grid {
                 grid-template-columns: 1fr 1fr;
@@ -1043,6 +1070,13 @@
             .page-nav .btn-nav {
                 font-size: 0.7rem;
                 padding: 6px 12px;
+            }
+            .ticker-track {
+                font-size: 0.7rem;
+                gap: 30px;
+            }
+            .ticker {
+                padding: 4px 0;
             }
         }
         @media (max-width: 480px) {
@@ -1054,14 +1088,26 @@
 </head>
 <body>
 
-    <canvas id="particles-canvas"></canvas>
-    <div class="floating-tokens" id="floatingTokens"></div>
-
-    <div class="ticker">
-        <div class="ticker-track">
-            <span>🛢️ USDS — Oil &amp; Chemicals &nbsp;|&nbsp; Oil · Gas · Coal · Petrochemicals · Polymers &nbsp;|&nbsp; 10% Proof of Funds (POF) in USDS &nbsp;|&nbsp; 🚀</span>
+    <!-- ============================================================
+         ДВЕ БЕГУЩИЕ СТРОКИ (РЫНОК + ИНФОРМАЦИЯ О ТОКЕНЕ)
+         ============================================================ -->
+    <div class="ticker-container">
+        <!-- Строка 1: Рыночные данные (Platts / OilPrice) -->
+        <div class="ticker ticker-platts">
+            <div class="ticker-track" id="tickerPlatts">
+                <span>🛢️ WTI Crude: $78.42/bbl | Brent: $82.15/bbl | Natural Gas: $2.85/MMBtu | Ethylene: $890/ton | Propylene: $1,020/ton | Polyethylene: $1,150/ton | 🔄</span>
+            </div>
+        </div>
+        <!-- Строка 2: Информация о USDS -->
+        <div class="ticker ticker-usds">
+            <div class="ticker-track" id="tickerUSDS">
+                <span>🚀 USDS — Oil &amp; Chemicals | 67% RWA (Oil · Gas · Coal · Petrochemicals) | 33% Yield (Industry · Robotics) | 10% POF | APY ~22% | Contract: 7qWzqK... | 🔄</span>
+            </div>
         </div>
     </div>
+
+    <canvas id="particles-canvas"></canvas>
+    <div class="floating-tokens" id="floatingTokens"></div>
 
     <div class="ai-chat" id="aiChat">
         <div class="ai-chat-header" id="aiChatHeader">
@@ -1078,7 +1124,7 @@
             <div class="ai-quick-btns">
                 <button class="ai-qbtn" data-q="What is USDS?" data-i18n="ai_q1">What is USDS?</button>
                 <button class="ai-qbtn" data-q="What is POF?" data-i18n="ai_q2">What is POF?</button>
-                <button class="ai-qbtn" data-q="List commodities" data-i18n="ai_q3">List commodities</button>
+                <button class="ai-qbtn" data-q="List products" data-i18n="ai_q3">List products</button>
             </div>
             <div class="ai-input-wrap">
                 <input type="text" class="ai-input" id="aiInput" placeholder="Ask me anything..." data-i18n="ai_placeholder" />
@@ -1382,7 +1428,7 @@
                         ai_greeting: '👋 Hi! I\'m your USDS assistant. Ask me about oil, petrochemicals, prices, or Proof of Funds.',
                         ai_q1: 'What is USDS?',
                         ai_q2: 'What is POF?',
-                        ai_q3: 'List commodities',
+                        ai_q3: 'List products',
                         ai_placeholder: 'Ask me anything...'
                     },
                     ru: {
@@ -1462,7 +1508,7 @@
                         ai_greeting: '👋 Привет! Я твой помощник USDS. Спрашивай о нефти, нефтехимии, ценах или Proof of Funds.',
                         ai_q1: 'Что такое USDS?',
                         ai_q2: 'Что такое POF?',
-                        ai_q3: 'Список товаров',
+                        ai_q3: 'Список продуктов',
                         ai_placeholder: 'Спроси меня о чём угодно...'
                     },
                     es: {
@@ -1782,7 +1828,7 @@
                         ai_greeting: '👋 你好！我是你的 USDS 助手。问我关于石油、石化、价格或 Proof of Funds 的问题。',
                         ai_q1: '什么是 USDS？',
                         ai_q2: '什么是 POF？',
-                        ai_q3: '商品列表',
+                        ai_q3: '产品列表',
                         ai_placeholder: '问我任何问题...'
                     },
                     ja: {
@@ -1862,7 +1908,7 @@
                         ai_greeting: '👋 こんにちは！私はUSDSアシスタントです。石油、石油化学、価格、Proof of Fundsについて質問してください。',
                         ai_q1: 'USDSとは？',
                         ai_q2: 'POFとは？',
-                        ai_q3: '商品リスト',
+                        ai_q3: '製品リスト',
                         ai_placeholder: '何でも質問してください...'
                     },
                     ar: {
@@ -1942,14 +1988,14 @@
                         ai_greeting: '👋 مرحباً! أنا مساعد USDS الخاص بك. اسألني عن النفط والبتروكيماويات والأسعار أو Proof of Funds.',
                         ai_q1: 'ما هو USDS؟',
                         ai_q2: 'ما هو POF؟',
-                        ai_q3: 'قائمة السلع',
+                        ai_q3: 'قائمة المنتجات',
                         ai_placeholder: 'اسألني أي شيء...'
                     }
                 };
 
                 const langBtns = document.querySelectorAll('.lang-btn');
                 const elements = document.querySelectorAll('[data-i18n]');
-                let currentLang = localStorage.getItem('eurs_lang') || 'en';
+                let currentLang = localStorage.getItem('usds_lang') || 'en';
 
                 function applyLanguage(lang) {
                     const t = translations[lang] || translations.en;
@@ -1967,7 +2013,7 @@
                     });
                     langBtns.forEach(b => b.classList.remove('active'));
                     document.querySelector(`.lang-btn[data-lang="${lang}"]`)?.classList.add('active');
-                    localStorage.setItem('eurs_lang', lang);
+                    localStorage.setItem('usds_lang', lang);
                     currentLang = lang;
                 }
 
@@ -2153,10 +2199,10 @@
                 if (q.includes('pof') || q.includes('proof')) {
                     return '🔐 <b>Proof of Funds (POF)</b><br>1. Calculate commission<br>2. Buy USDS on Jupiter<br>3. Submit Swap Hash<br>4. We verify and contact you within 48 hours';
                 }
-                if (q.includes('fintech') || q.includes('list')) {
+                if (q.includes('fintech') || q.includes('list') || q.includes('products')) {
                     return '🏦 <b>31 Energy Instruments:</b><br>Oil Futures, Gas Futures, Coal Contracts, Polymer Swaps, Petrochemical Options, Industry Bonds, Robotics Equity, Carbon Credits, Energy Index, Green Energy Bonds, Infrastructure Funds, ... and more!';
                 }
-                return '🤔 Try asking:<br>• "What is USDS?"<br>• "How much APY?"<br>• "What is POF?"<br>• "List energy products"';
+                return '🤔 Try asking:<br>• "What is USDS?"<br>• "How much APY?"<br>• "What is POF?"<br>• "List products"';
             }
 
             toggleBtn.classList.remove('hidden');

@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USDS — Oil & Chemicals</title>
+    <link rel="icon" href="usds_logo.png" type="image/png" />
+    <meta property="og:title" content="USDS — Oil & Chemicals" />
+    <meta property="og:description" content="Oil, gas, coal, petrochemicals — 10% POF in USDS." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/blockchaingold/usds/main/usds_logo.png" />
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <style>
+        /* ========== БАЗА (такая же как у EURS) ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #0b1a2e;
+            --gold: #d4a843;
+            --gold-light: #f0d080;
+            --text: #e8e8e8;
+            --text-muted: #aaa;
+            --bg-dark: #0a0e17;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(212, 168, 67, 0.25);
+            --radius: 16px;
+            --transition: 0.3s ease;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        .section-title {
+            font-size: 2.4rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .section-sub {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .highlight {
+            color: var(--gold);
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--gold);
+            color: var(--primary);
+        }
+        .btn-primary:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 168, 67, 0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1.5px solid var(--gold);
+        }
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--primary);
+        }
+        .btn-success {
+            background: #2e7d32;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #388e3c;
+        }
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 0.75rem;
+        }
+        .btn-buy {
+            background: #1a73e8;
+            color: white;
+        }
+        .btn-buy:hover {
+            background: #1557b0;
+        }
+        .btn-nav {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-nav:hover {
+            background: var(--gold);
+            color: var(--primary);
+            border-color: var(--gold);
+        }
+        /* ========== АНИМАЦИИ ========== */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .floating-tokens {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .float-token {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.10;
+            animation: floatUp linear infinite;
+            user-select: none;
+        }
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(0.6);
+                opacity: 0.06;
+            }
+            50% {
+                opacity: 0.16;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg) scale(1.2);
+                opacity: 0.02;
+            }
+        }
+        .ticker {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(212, 168, 67, 0.12);
+            border-top: 1px solid var(--border);
+            padding: 8px 0;
+            z-index: 999;
+            overflow: hidden;
+            backdrop-filter: blur(6px);
+        }
+        .ticker-track {
+            display: flex;
+            gap: 60px;
+            white-space: nowrap;
+            animation: ticker-scroll 28s linear infinite;
+            font-size: 0.95rem;
+            color: var(--gold-light);
+        }
+        @keyframes ticker-scroll {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+        /* ========== ШАПКА ========== */
+        .header {
+            background: rgba(10, 14, 23, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            color: var(--gold);
+        }
+        .nav-list {
+            display: flex;
+            gap: 16px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        .nav-list a {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        .nav-list a:hover {
+            color: var(--gold);
+        }
+        .lang-switch {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .lang-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+        }
+        .lang-btn:hover,
+        .lang-btn.active {
+            background: var(--gold);
+            color: var(--primary);
+            border-color: var(--gold);
+        }
+        .burger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .burger span {
+            display: block;
+            width: 26px;
+            height: 2.5px;
+            background: var(--text);
+            border-radius: 2px;
+        }
+        /* ========== ГЕРОЙ ========== */
+        .hero {
+            padding: 140px 0 80px;
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .hero-content {
+            max-width: 720px;
+        }
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+        .hero-desc {
+            font-size: 1.4rem;
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .hero-sub {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        /* ========== БЛОКИ ========== */
+        section {
+            position: relative;
+            z-index: 2;
+            padding: 60px 0;
+        }
+        .structure {
+            background: var(--primary);
+        }
+        .structure-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .structure-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+        }
+        .structure-card-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+        .structure-list {
+            list-style: none;
+        }
+        .structure-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .structure-list li:last-child {
+            border-bottom: none;
+        }
+        .perc {
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .structure-img {
+            max-width: 500px;
+            width: 100%;
+            margin: 20px auto 0;
+            border-radius: var(--radius);
+            display: block;
+        }
+        .tokenomics {
+            background: var(--bg-dark);
+        }
+        .tokenomics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .tokenomics-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 16px;
+            text-align: center;
+        }
+        .tokenomics-perc {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--gold);
+            display: block;
+        }
+        .tokenomics-label {
+            font-weight: 600;
+            margin: 8px 0 4px;
+            display: block;
+        }
+        .tokenomics-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .yield {
+            background: var(--primary);
+        }
+        .yield-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .yield-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+        }
+        .yield-icon {
+            font-size: 2.6rem;
+            margin-bottom: 12px;
+        }
+        .yield-card-title {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--gold);
+        }
+        .yield-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .yield-calc {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .yield-calc input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 1.2rem;
+            width: 200px;
+            text-align: center;
+            margin: 12px 0;
+        }
+        .yield-calc .result {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-top: 8px;
+        }
+        .tech {
+            background: var(--bg-dark);
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .tech-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+        .tech-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .tech-name {
+            font-size: 1rem;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+        .tech-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .tech-address {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+        .tech-address code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+        .roadmap {
+            background: var(--primary);
+        }
+        .roadmap-timeline {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .roadmap-item {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .roadmap-item:last-child {
+            border-bottom: none;
+        }
+        .roadmap-phase {
+            font-weight: 700;
+            min-width: 90px;
+            color: var(--gold);
+        }
+        .roadmap-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            min-width: 100px;
+        }
+        .roadmap-status.done {
+            color: #4caf50;
+        }
+        .faq {
+            background: var(--bg-dark);
+        }
+        .faq-list {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+        .faq-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 18px 0;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--gold);
+        }
+        .faq-item.active .faq-question::after {
+            content: '−';
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            color: var(--text-muted);
+        }
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+            padding: 0 0 20px 0;
+        }
+        /* ========== FINTECH GRID ========== */
+        .fintech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .fintech-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: default;
+        }
+        .fintech-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--gold);
+            box-shadow: 0 8px 30px rgba(212, 168, 67, 0.1);
+        }
+        .fintech-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+        .fintech-name {
+            font-weight: 600;
+            color: var(--gold);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .fintech-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .fintech-card .btn {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            padding: 6px 16px;
+        }
+        /* ========== КОМЬЮНИТИ ========== */
+        .community {
+            background: var(--bg-dark);
+        }
+        .community-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        .community-link {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 10px 24px;
+            color: var(--text);
+            transition: var(--transition);
+        }
+        .community-link:hover {
+            background: var(--gold);
+            color: var(--primary);
+            border-color: var(--gold);
+        }
+        .footer {
+            padding: 30px 0;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .footer-disclaimer {
+            font-size: 0.75rem;
+            margin-top: 8px;
+            opacity: 0.6;
+        }
+        /* ========== МОДАЛКИ ========== */
+        .modal .step-indicator {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: block;
+        }
+        .modal .result-box {
+            margin-top: 16px;
+            padding: 14px;
+            background: rgba(212, 168, 67, 0.08);
+            border-radius: 10px;
+            color: var(--gold-light);
+            font-weight: 600;
+        }
+        .modal .hash-box {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            color: var(--text-muted);
+            border: 1px dashed var(--border);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .status-pending {
+            background: #f57f17;
+            color: #fff;
+        }
+        .status-approved {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-dark);
+            border: 1px solid var(--gold);
+            border-radius: var(--radius);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close:hover {
+            color: var(--text);
+        }
+        .modal h2 {
+            color: var(--gold);
+            margin-bottom: 16px;
+        }
+        .modal label {
+            display: block;
+            margin: 12px 0 4px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .modal input,
+        .modal select,
+        .modal textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        .modal input:focus,
+        .modal select:focus {
+            border-color: var(--gold);
+            outline: none;
+        }
+        .modal .modal-result {
+            margin-top: 16px;
+            padding: 14px;
+            background: rgba(212, 168, 67, 0.08);
+            border-radius: 10px;
+            color: var(--gold-light);
+            font-weight: 600;
+        }
+        .modal .btn {
+            margin-top: 16px;
+            width: 100%;
+        }
+        /* ========== ИИ-ЧАТ ========== */
+        .ai-chat {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            background: rgba(10, 14, 23, 0.96);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--gold);
+            border-radius: 20px;
+            z-index: 10001;
+            box-shadow: 0 16px 60px rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .ai-chat.open {
+            display: flex;
+        }
+        .ai-chat.minimized .ai-chat-body {
+            display: none;
+        }
+        .ai-chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(212, 168, 67, 0.08);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .ai-chat-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 0.95rem;
+        }
+        .ai-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotBlink 1.2s infinite;
+        }
+        @keyframes dotBlink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.2;
+            }
+        }
+        .ai-chat-header button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        .ai-chat-body {
+            display: flex;
+            flex-direction: column;
+            height: 420px;
+            max-height: 60vh;
+        }
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        .ai-msg-bot {
+            background: rgba(212, 168, 67, 0.12);
+            border-left: 3px solid var(--gold);
+            padding: 10px 14px;
+            border-radius: 0 12px 12px 12px;
+            max-width: 90%;
+            color: var(--text);
+            line-height: 1.5;
+            align-self: flex-start;
+        }
+        .ai-msg-user {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 14px;
+            border-radius: 12px 12px 0 12px;
+            max-width: 85%;
+            color: var(--text);
+            align-self: flex-end;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .ai-quick-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 18px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .ai-qbtn {
+            background: rgba(212, 168, 67, 0.12);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        .ai-qbtn:hover {
+            background: var(--gold);
+            color: var(--primary);
+            border-color: var(--gold);
+        }
+        .ai-input-wrap {
+            display: flex;
+            gap: 6px;
+            padding: 8px 18px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .ai-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 10px 16px;
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .ai-input:focus {
+            border-color: var(--gold);
+        }
+        .ai-send {
+            background: var(--gold);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-send:hover {
+            transform: scale(1.05);
+            background: var(--gold-light);
+        }
+        .ai-chat-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: var(--primary);
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 8px 30px rgba(212, 168, 67, 0.3);
+            transition: var(--transition);
+        }
+        .ai-chat-toggle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 40px rgba(212, 168, 67, 0.5);
+        }
+        .ai-chat-toggle.hidden {
+            display: none;
+        }
+        .page-nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0 10px;
+            flex-wrap: wrap;
+        }
+        /* ========== АДАПТИВ ========== */
+        @media (max-width: 992px) {
+            .structure-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-title {
+                font-size: 2.6rem;
+            }
+        }
+        @media (max-width: 768px) {
+            .nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--primary);
+                padding: 20px;
+                border-bottom: 1px solid var(--border);
+            }
+            .nav.open {
+                display: block;
+            }
+            .nav-list {
+                flex-direction: column;
+                gap: 14px;
+                align-items: center;
+            }
+            .burger {
+                display: flex;
+            }
+            .btn-buy {
+                display: none;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-stats {
+                gap: 24px;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .lang-btn {
+                font-size: 0.6rem;
+                padding: 2px 8px;
+            }
+            .ai-chat {
+                right: 12px;
+                bottom: 80px;
+                width: calc(100vw - 24px);
+            }
+            .ai-chat-toggle {
+                width: 52px;
+                height: 52px;
+                font-size: 1.6rem;
+                right: 16px;
+                bottom: 20px;
+            }
+            .fintech-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .page-nav .btn-nav {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+            }
+        }
+        @media (max-width: 480px) {
+            .fintech-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles-canvas"></canvas>
+    <div class="floating-tokens" id="floatingTokens"></div>
+
+    <div class="ticker">
+        <div class="ticker-track">
+            <span>🛢️ USDS — Oil &amp; Chemicals &nbsp;|&nbsp; Oil · Gas · Coal · Petrochemicals · Polymers &nbsp;|&nbsp; 10% Proof of Funds (POF) in USDS &nbsp;|&nbsp; 🚀</span>
+        </div>
+    </div>
+
+    <div class="ai-chat" id="aiChat">
+        <div class="ai-chat-header" id="aiChatHeader">
+            <div class="ai-chat-title"><span class="ai-dot"></span>🤖 AI Assistant</div>
+            <div>
+                <button class="ai-chat-minimize" id="aiMinimize">−</button>
+                <button class="ai-chat-close" id="aiCloseChat">✕</button>
+            </div>
+        </div>
+        <div class="ai-chat-body">
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-msg-bot" data-i18n="ai_greeting">👋 Hi! I'm your USDS assistant. Ask me about oil, petrochemicals, prices, or Proof of Funds.</div>
+            </div>
+            <div class="ai-quick-btns">
+                <button class="ai-qbtn" data-q="What is USDS?" data-i18n="ai_q1">What is USDS?</button>
+                <button class="ai-qbtn" data-q="What is POF?" data-i18n="ai_q2">What is POF?</button>
+                <button class="ai-qbtn" data-q="List commodities" data-i18n="ai_q3">List commodities</button>
+            </div>
+            <div class="ai-input-wrap">
+                <input type="text" class="ai-input" id="aiInput" placeholder="Ask me anything..." data-i18n="ai_placeholder" />
+                <button class="ai-send" id="aiSend">➤</button>
+            </div>
+        </div>
+    </div>
+    <button class="ai-chat-toggle" id="aiChatToggle">💬</button>
+
+    <header class="header">
+        <div class="container header-container">
+            <a href="#" class="logo">
+                <img src="usds_logo.png" alt="USDS Logo" class="logo-img" onerror="this.style.display='none'" />
+                <span class="logo-text">USDS</span>
+            </a>
+            <nav class="nav" id="nav">
+                <ul class="nav-list">
+                    <li><a href="#about" data-i18n="nav_about">About</a></li>
+                    <li><a href="#structure" data-i18n="nav_structure">Structure</a></li>
+                    <li><a href="#tokenomics" data-i18n="nav_tokenomics">Tokenomics</a></li>
+                    <li><a href="#yield" data-i18n="nav_yield">Yield</a></li>
+                    <li><a href="#fintech" data-i18n="nav_fintech">Oil &amp; Chemicals</a></li>
+                    <li><a href="commodities.html" data-i18n="nav_commodities">💎 Commodities</a></li>
+                    <li><a href="vehicles.html" data-i18n="nav_vehicles">🚀 Vehicles</a></li>
+                    <li><a href="#tech" data-i18n="nav_tech">Tech</a></li>
+                    <li><a href="#roadmap" data-i18n="nav_roadmap">Roadmap</a></li>
+                </ul>
+            </nav>
+            <div class="lang-switch" id="langSwitch">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="es">ES</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+                <button class="lang-btn" data-lang="de">DE</button>
+                <button class="lang-btn" data-lang="zh">ZH</button>
+                <button class="lang-btn" data-lang="ja">JA</button>
+                <button class="lang-btn" data-lang="ar">AR</button>
+            </div>
+            <a href="https://www.geckoterminal.com/solana/pools/BSKCLd54D98qPJvkma4hhRgyT9YtzUWHAQFYbv9ysY1D" target="_blank" class="btn btn-primary btn-buy" data-i18n="buy_btn">Buy USDS</a>
+            <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </header>
+
+    <section class="hero" id="about">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title" data-i18n="hero_title">USDS — <span class="highlight">Oil</span> &amp; Chemicals</h1>
+                <p class="hero-desc" data-i18n="hero_desc">Oil, gas, coal, petrochemicals, polymers.</p>
+                <p class="hero-sub" data-i18n="hero_sub">Buy energy assets with confidence. Prove your intent with 10% in USDS — we'll verify and connect you within 48 hours.</p>
+                <div class="hero-buttons">
+                    <a href="https://www.geckoterminal.com/solana/pools/BSKCLd54D98qPJvkma4hhRgyT9YtzUWHAQFYbv9ysY1D" target="_blank" class="btn btn-primary" data-i18n="buy_btn">Buy USDS</a>
+                    <a href="#fintech" class="btn btn-secondary" data-i18n="explore_btn">Explore Ecosystem</a>
+                </div>
+                <div class="hero-stats">
+                    <div><span class="stat-number">1.15</span><span class="stat-label"> USDC</span></div>
+                    <div><span class="stat-number">~22%</span><span class="stat-label"> APY</span></div>
+                    <div><span class="stat-number">24h</span><span class="stat-label"> Payouts</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="structure" id="structure">
+        <div class="container">
+            <h2 class="section-title" data-i18n="structure_title">67% Real Assets <span class="highlight">+ 33% Yield</span></h2>
+            <p class="section-sub" data-i18n="structure_sub">USDS is backed by oil, gas, coal, and petrochemical raw materials used in polymer production.</p>
+            <div class="structure-grid">
+                <div class="structure-card">
+                    <h3 class="structure-card-title" data-i18n="structure_card1">67% — Real Assets</h3>
+                    <ul class="structure-list">
+                        <li><span class="perc">25%</span> Oil (WTI)</li>
+                        <li><span class="perc">15%</span> Natural Gas</li>
+                        <li><span class="perc">10%</span> Coal</li>
+                        <li><span class="perc">12%</span> Petrochemicals (polymers)</li>
+                        <li><span class="perc">10%</span> Basic chemicals</li>
+                    </ul>
+                    <p class="structure-note">Oracles: Pyth (WTI, Natural Gas) + Switchboard (petrochemicals)</p>
+                </div>
+                <div class="structure-card">
+                    <h3 class="structure-card-title" data-i18n="structure_card2">33% — Yield</h3>
+                    <ul class="structure-list">
+                        <li><span class="perc">15%</span> Industry (B2B)</li>
+                        <li><span class="perc">13%</span> Robotics</li>
+                    </ul>
+                    <p class="structure-note">Income distributed automatically via Permanent Delegate</p>
+                </div>
+            </div>
+            <img src="structure-diagram.png" alt="USDS Structure" class="structure-img" onerror="this.style.display='none'" />
+        </div>
+    </section>
+
+    <section class="tokenomics" id="tokenomics">
+        <div class="container">
+            <h2 class="section-title" data-i18n="tokenomics_title">Transparent <span class="highlight">Distribution</span></h2>
+            <p class="section-sub" data-i18n="tokenomics_sub">Total supply: 1,000,000,000 USDS. Mint &amp; Freeze authorities revoked.</p>
+            <div class="tokenomics-grid">
+                <div class="tokenomics-item"><span class="tokenomics-perc">40%</span><span class="tokenomics-label" data-i18n="t_label1">Presale</span><span class="tokenomics-desc" data-i18n="t_desc1">Initial capital raise</span></div>
+                <div class="tokenomics-item"><span class="tokenomics-perc">30%</span><span class="tokenomics-label" data-i18n="t_label2">Liquidity</span><span class="tokenomics-desc" data-i18n="t_desc2">Locked 12 months (Meteora)</span></div>
+                <div class="tokenomics-item"><span class="tokenomics-perc">15%</span><span class="tokenomics-label" data-i18n="t_label3">Team</span><span class="tokenomics-desc" data-i18n="t_desc3">Locked 24 months (vesting)</span></div>
+                <div class="tokenomics-item"><span class="tokenomics-perc">10%</span><span class="tokenomics-label" data-i18n="t_label4">Marketing</span><span class="tokenomics-desc" data-i18n="t_desc4">Partnerships, listings, ads</span></div>
+                <div class="tokenomics-item"><span class="tokenomics-perc">5%</span><span class="tokenomics-label" data-i18n="t_label5">Reserve</span><span class="tokenomics-desc" data-i18n="t_desc5">Contingency</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="yield" id="yield">
+        <div class="container">
+            <h2 class="section-title" data-i18n="yield_title">Your income — <span class="highlight">every 24 hours</span></h2>
+            <p class="section-sub" data-i18n="yield_sub">No staking, no locks. Just hold USDS in your wallet.</p>
+            <div class="yield-grid">
+                <div class="yield-card"><div class="yield-icon">💰</div><h3 class="yield-card-title" data-i18n="yield_card1_title">Transfer Fee 2%</h3><p data-i18n="yield_card1">2% from every buy/sell goes to the reward pool.</p></div>
+                <div class="yield-card"><div class="yield-icon">🤖</div><h3 class="yield-card-title" data-i18n="yield_card2_title">Permanent Delegate</h3><p data-i18n="yield_card2">Automatically distributes the pool to all holders daily.</p></div>
+                <div class="yield-card"><div class="yield-icon">📊</div><h3 class="yield-card-title" data-i18n="yield_card3_title">~22% APY</h3><p data-i18n="yield_card3">From oil, gas, petrochemicals, industry &amp; robotics.</p></div>
+            </div>
+            <div class="yield-calc">
+                <h3 style="color:var(--gold); margin-bottom:6px;" data-i18n="calc_title">💵 Yield Calculator</h3>
+                <p data-i18n="calc_sub">Enter amount in USD:</p>
+                <input type="number" id="calcInput" value="100" min="1" step="10" />
+                <div class="result" id="calcResult">≈ $122.00 after 1 year</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINTECH (OIL & CHEMICALS) ===== -->
+    <section class="fintech" id="fintech">
+        <div class="container">
+            <h2 class="section-title" data-i18n="fintech_title">Oil &amp; Chemicals <span class="highlight">Ecosystem</span></h2>
+            <p class="section-sub" data-i18n="fintech_sub">31 energy instruments. Calculate commission, buy USDS, submit Proof of Funds (POF).</p>
+            <div class="fintech-grid" id="fintechGrid"></div>
+            <div style="text-align:center;margin-top:30px;">
+                <button class="btn btn-secondary btn-sm" onclick="showHistory()" data-i18n="my_apps">📋 My Applications</button>
+            </div>
+            <div class="page-nav">
+                <a href="commodities.html" class="btn-nav" data-i18n="nav_commodities">💎 Commodities</a>
+                <a href="vehicles.html" class="btn-nav" data-i18n="nav_vehicles">🚀 Vehicles &amp; Robotics</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== МОДАЛКИ ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <section class="tech" id="tech">
+        <div class="container">
+            <h2 class="section-title" data-i18n="tech_title">Built on <span class="highlight">Solana Token-2022</span></h2>
+            <p class="section-sub" data-i18n="tech_sub">Modern extensions for RWA tokens.</p>
+            <div class="tech-grid">
+                <div class="tech-item"><span class="tech-icon">⚡</span><h4 class="tech-name" data-i18n="tech_name1">Transfer Fee (2%)</h4><p data-i18n="tech_desc1">Auto-collect fees to reward pool</p></div>
+                <div class="tech-item"><span class="tech-icon">🔗</span><h4 class="tech-name" data-i18n="tech_name2">Transfer Hook</h4><p data-i18n="tech_desc2">Oracle price checks (Pyth, Switchboard)</p></div>
+                <div class="tech-item"><span class="tech-icon">🤖</span><h4 class="tech-name" data-i18n="tech_name3">Permanent Delegate</h4><p data-i18n="tech_desc3">Auto-distribute income</p></div>
+                <div class="tech-item"><span class="tech-icon">📝</span><h4 class="tech-name" data-i18n="tech_name4">Metadata</h4><p data-i18n="tech_desc4">RWA documentation link</p></div>
+            </div>
+            <div class="tech-address">
+                <p><strong>Contract:</strong> <code>7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF</code></p>
+                <p><strong>Pool:</strong> <code>BSKCLd54D98qPJvkma4hhRgyT9YtzUWHAQFYbv9ysY1D</code></p>
+                <a href="https://solscan.io/token/7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF" target="_blank" class="btn btn-secondary" style="margin-top:12px;">View on Solana Explorer</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="roadmap" id="roadmap">
+        <div class="container">
+            <h2 class="section-title" data-i18n="roadmap_title">Roadmap</h2>
+            <p class="section-sub" data-i18n="roadmap_sub">What's next?</p>
+            <div class="roadmap-timeline">
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 1</span><span class="roadmap-status done">✅ Done</span><p>Token creation, presale, liquidity on Meteora</p></div>
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 2</span><span class="roadmap-status">Jul 2026</span><p>Daily payouts activation (Permanent Delegate)</p></div>
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 3</span><span class="roadmap-status">Aug 2026</span><p>Solana Pay integration</p></div>
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 4</span><span class="roadmap-status">Sep 2026</span><p>Oil &amp; Chemicals trading module</p></div>
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 5</span><span class="roadmap-status">Oct 2026</span><p>CEX listing (MEXC / Gate.io)</p></div>
+                <div class="roadmap-item"><span class="roadmap-phase">Phase 6</span><span class="roadmap-status">Dec 2026</span><p>Cross-conversion with USDS &amp; EUSD</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2 class="section-title" data-i18n="faq_title">FAQ</h2>
+            <div class="faq-list">
+                <div class="faq-item"><button class="faq-question" data-i18n="faq_q1">Do I need to stake?</button><div class="faq-answer"><p data-i18n="faq_a1">No. Just hold USDS in Phantom, Solflare, or Backpack. Rewards come automatically.</p></div></div>
+                <div class="faq-item"><button class="faq-question" data-i18n="faq_q2">How often are payouts?</button><div class="faq-answer"><p data-i18n="faq_a2">Every 24 hours via Permanent Delegate.</p></div></div>
+                <div class="faq-item"><button class="faq-question" data-i18n="faq_q3">What is Proof of Funds (POF)?</button><div class="faq-answer"><p data-i18n="faq_a3">You buy USDS (10% of the product price) and submit the Swap Hash. This proves you have the funds and are ready to proceed with the transaction.</p></div></div>
+                <div class="faq-item"><button class="faq-question" data-i18n="faq_q4">Where to buy USDS?</button><div class="faq-answer"><p>Meteora DAMM V2 pool: <code>BSKCLd54D98qPJvkma4hhRgyT9YtzUWHAQFYbv9ysY1D</code></p></div></div>
+                <div class="faq-item"><button class="faq-question" data-i18n="faq_q5">Is there risk?</button><div class="faq-answer"><p data-i18n="faq_a5">Like any crypto, USDS has volatility. But 67% is backed by real assets (oil, gas, petrochemicals), reducing risk.</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== COMMUNITY ===== -->
+    <section class="community">
+        <div class="container">
+            <h2 class="section-title" data-i18n="community_title">Join the <span class="highlight">Community</span></h2>
+            <div class="community-links">
+                <a href="#" target="_blank" class="community-link" data-i18n="community_twitter">🐦 X (Twitter)</a>
+                <a href="#" target="_blank" class="community-link" data-i18n="community_telegram">💬 Telegram</a>
+                <a href="mailto:bankeurc@gmail.com" class="community-link" data-i18n="community_contact">📧 Contact Us</a>
+                <a href="https://solscan.io/token/7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF" target="_blank" class="community-link" data-i18n="community_explorer">🔍 Solana Explorer</a>
+                <a href="https://www.geckoterminal.com/solana/pools/BSKCLd54D98qPJvkma4hhRgyT9YtzUWHAQFYbv9ysY1D" target="_blank" class="community-link" data-i18n="community_gecko">📊 Geckoterminal</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 USDS. Built on <a href="https://solana.com/" target="_blank" data-i18n="footer_text">Solana Token-2022</a>.</p>
+            <p class="footer-disclaimer" data-i18n="footer_disclaimer">Not financial advice. Always DYOR.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            'use strict';
+
+            // ---- EMAILJS INIT ----
+            (function() {
+                emailjs.init('p-mbGFGSojk7tFupL');
+            })();
+
+            // ---- ПЕРЕВОДЧИК (8 языков) ----
+            (function() {
+                const translations = {
+                    en: {
+                        nav_about: 'About',
+                        nav_structure: 'Structure',
+                        nav_tokenomics: 'Tokenomics',
+                        nav_yield: 'Yield',
+                        nav_fintech: 'Oil & Chemicals',
+                        nav_commodities: '💎 Commodities',
+                        nav_vehicles: '🚀 Vehicles',
+                        nav_tech: 'Tech',
+                        nav_roadmap: 'Roadmap',
+                        buy_btn: 'Buy USDS',
+                        explore_btn: 'Explore Ecosystem',
+                        hero_title: 'USDS — Oil & Chemicals',
+                        hero_desc: 'Oil, gas, coal, petrochemicals, polymers.',
+                        hero_sub: 'Buy energy assets with confidence. Prove your intent with 10% in USDS — we\'ll verify and connect you within 48 hours.',
+                        structure_title: '67% Real Assets + 33% Yield',
+                        structure_sub: 'USDS is backed by oil, gas, coal, and petrochemical raw materials used in polymer production.',
+                        structure_card1: '67% — Real Assets',
+                        structure_card2: '33% — Yield',
+                        tokenomics_title: 'Transparent Distribution',
+                        tokenomics_sub: 'Total supply: 1,000,000,000 USDS. Mint & Freeze authorities revoked.',
+                        t_label1: 'Presale',
+                        t_desc1: 'Initial capital raise',
+                        t_label2: 'Liquidity',
+                        t_desc2: 'Locked 12 months (Meteora)',
+                        t_label3: 'Team',
+                        t_desc3: 'Locked 24 months (vesting)',
+                        t_label4: 'Marketing',
+                        t_desc4: 'Partnerships, listings, ads',
+                        t_label5: 'Reserve',
+                        t_desc5: 'Contingency',
+                        yield_title: 'Your income — every 24 hours',
+                        yield_sub: 'No staking, no locks. Just hold USDS in your wallet.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '2% from every buy/sell goes to the reward pool.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'Automatically distributes the pool to all holders daily.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'From oil, gas, petrochemicals, industry & robotics.',
+                        calc_title: '💵 Yield Calculator',
+                        calc_sub: 'Enter amount in USD:',
+                        tech_title: 'Built on Solana Token-2022',
+                        tech_sub: 'Modern extensions for RWA tokens.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'Auto-collect fees to reward pool',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'Oracle price checks (Pyth, Switchboard)',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'Auto-distribute income',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'RWA documentation link',
+                        roadmap_title: 'Roadmap',
+                        roadmap_sub: "What's next?",
+                        faq_title: 'FAQ',
+                        faq_q1: 'Do I need to stake?',
+                        faq_a1: 'No. Just hold USDS in Phantom, Solflare, or Backpack. Rewards come automatically.',
+                        faq_q2: 'How often are payouts?',
+                        faq_a2: 'Every 24 hours via Permanent Delegate.',
+                        faq_q3: 'What is Proof of Funds (POF)?',
+                        faq_a3: 'You buy USDS (10% of the product price) and submit the Swap Hash. This proves you have the funds and are ready to proceed with the transaction.',
+                        faq_q4: 'Where to buy USDS?',
+                        faq_q5: 'Is there risk?',
+                        faq_a5: 'Like any crypto, USDS has volatility. But 67% is backed by real assets (oil, gas, petrochemicals), reducing risk.',
+                        community_title: 'Join the Community',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 Contact Us',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'Oil & Chemicals Ecosystem',
+                        fintech_sub: '31 energy instruments. Calculate commission, buy USDS, submit Proof of Funds (POF).',
+                        my_apps: '📋 My Applications',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'Not financial advice. Always DYOR.',
+                        ai_greeting: '👋 Hi! I\'m your USDS assistant. Ask me about oil, petrochemicals, prices, or Proof of Funds.',
+                        ai_q1: 'What is USDS?',
+                        ai_q2: 'What is POF?',
+                        ai_q3: 'List commodities',
+                        ai_placeholder: 'Ask me anything...'
+                    },
+                    ru: {
+                        nav_about: 'О нас',
+                        nav_structure: 'Структура',
+                        nav_tokenomics: 'Токеномика',
+                        nav_yield: 'Доходность',
+                        nav_fintech: 'Нефть и химия',
+                        nav_commodities: '💎 Товары',
+                        nav_vehicles: '🚀 Транспорт',
+                        nav_tech: 'Технология',
+                        nav_roadmap: 'План',
+                        buy_btn: 'Купить USDS',
+                        explore_btn: 'Исследовать экосистему',
+                        hero_title: 'USDS — Нефть и химия',
+                        hero_desc: 'Нефть, газ, уголь, нефтехимия, полимеры.',
+                        hero_sub: 'Покупайте энергетические активы с уверенностью. Подтвердите свои намерения 10% в USDS — мы проверим и свяжемся в течение 48 часов.',
+                        structure_title: '67% реальных активов + 33% доходности',
+                        structure_sub: 'USDS обеспечен нефтью, газом, углём и нефтехимическим сырьём для производства полимеров.',
+                        structure_card1: '67% — Реальные активы',
+                        structure_card2: '33% — Доходность',
+                        tokenomics_title: 'Прозрачное распределение',
+                        tokenomics_sub: 'Общий запас: 1,000,000,000 USDS. Mint и Freeze Authority отозваны.',
+                        t_label1: 'Пресейл',
+                        t_desc1: 'Первичное привлечение',
+                        t_label2: 'Ликвидность',
+                        t_desc2: 'Блокировка на 12 месяцев',
+                        t_label3: 'Команда',
+                        t_desc3: 'Лок на 24 месяца',
+                        t_label4: 'Маркетинг',
+                        t_desc4: 'Партнёрства, листинги',
+                        t_label5: 'Резерв',
+                        t_desc5: 'Непредвиденные расходы',
+                        yield_title: 'Твой доход — каждые 24 часа',
+                        yield_sub: 'Без стейкинга и локов. Просто держи USDS в кошельке.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '2% с каждой покупки/продажи идут в пул наград.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'Автоматически распределяет пул между держателями ежедневно.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'От нефти, газа, нефтехимии, промышленности и робототехники.',
+                        calc_title: '💵 Калькулятор дохода',
+                        calc_sub: 'Введите сумму в USD:',
+                        tech_title: 'Построен на Solana Token-2022',
+                        tech_sub: 'Современные расширения для RWA-токенов.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'Автоматический сбор комиссий в пул наград',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'Проверка цен через оракулы',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'Автоматическое распределение дохода',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'Ссылка на RWA-документацию',
+                        roadmap_title: 'Дорожная карта',
+                        roadmap_sub: 'Что дальше?',
+                        faq_title: 'FAQ',
+                        faq_q1: 'Нужно ли стейкать?',
+                        faq_a1: 'Нет. Просто держи USDS в Phantom, Solflare или Backpack. Награды приходят автоматически.',
+                        faq_q2: 'Как часто выплаты?',
+                        faq_a2: 'Каждые 24 часа через Permanent Delegate.',
+                        faq_q3: 'Что такое Proof of Funds (POF)?',
+                        faq_a3: 'Вы покупаете USDS (10% от цены товара) и отправляете Swap Hash. Это доказывает наличие средств и серьёзность намерений.',
+                        faq_q4: 'Где купить USDS?',
+                        faq_q5: 'Есть ли риск?',
+                        faq_a5: 'Как у любой криптовалюты — волатильность есть. Но 67% обеспечено реальными активами (нефть, газ, нефтехимия), что снижает риски.',
+                        community_title: 'Присоединяйся к сообществу',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 Связаться с нами',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'Экосистема нефти и химии',
+                        fintech_sub: '31 энергетический инструмент. Рассчитай комиссию, купи USDS, отправь Proof of Funds (POF).',
+                        my_apps: '📋 Мои заявки',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'Не финансовый совет. Всегда проводите собственное исследование (DYOR).',
+                        ai_greeting: '👋 Привет! Я твой помощник USDS. Спрашивай о нефти, нефтехимии, ценах или Proof of Funds.',
+                        ai_q1: 'Что такое USDS?',
+                        ai_q2: 'Что такое POF?',
+                        ai_q3: 'Список товаров',
+                        ai_placeholder: 'Спроси меня о чём угодно...'
+                    },
+                    es: {
+                        nav_about: 'Acerca',
+                        nav_structure: 'Estructura',
+                        nav_tokenomics: 'Tokenomics',
+                        nav_yield: 'Rendimiento',
+                        nav_fintech: 'Petróleo y química',
+                        nav_commodities: '💎 Productos',
+                        nav_vehicles: '🚀 Vehículos',
+                        nav_tech: 'Tecnología',
+                        nav_roadmap: 'Hoja de ruta',
+                        buy_btn: 'Comprar USDS',
+                        explore_btn: 'Explorar ecosistema',
+                        hero_title: 'USDS — Petróleo y química',
+                        hero_desc: 'Petróleo, gas, carbón, petroquímica, polímeros.',
+                        hero_sub: 'Compre activos energéticos con confianza. Demuestre su intención con el 10% en USDS — verificaremos y le contactaremos en 48 horas.',
+                        structure_title: '67% Activos reales + 33% Rendimiento',
+                        structure_sub: 'USDS está respaldado por petróleo, gas, carbón y materias primas petroquímicas utilizadas en la producción de polímeros.',
+                        structure_card1: '67% — Activos reales',
+                        structure_card2: '33% — Rendimiento',
+                        tokenomics_title: 'Distribución transparente',
+                        tokenomics_sub: 'Suministro total: 1,000,000,000 USDS. Autoridades Mint y Freeze revocadas.',
+                        t_label1: 'Preventa',
+                        t_desc1: 'Captación inicial',
+                        t_label2: 'Liquidez',
+                        t_desc2: 'Bloqueada 12 meses',
+                        t_label3: 'Equipo',
+                        t_desc3: 'Bloqueada 24 meses',
+                        t_label4: 'Marketing',
+                        t_desc4: 'Alianzas, listados',
+                        t_label5: 'Reserva',
+                        t_desc5: 'Contingencia',
+                        yield_title: 'Tus ingresos — cada 24 horas',
+                        yield_sub: 'Sin staking ni bloqueos. Solo mantén USDS en tu billetera.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: 'El 2% de cada compra/venta va al fondo de recompensas.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'Distribuye automáticamente el fondo a todos los tenedores diariamente.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'De petróleo, gas, petroquímica, industria y robótica.',
+                        calc_title: '💵 Calculadora de rendimiento',
+                        calc_sub: 'Ingresa el monto en USD:',
+                        tech_title: 'Construido en Solana Token-2022',
+                        tech_sub: 'Extensiones modernas para tokens RWA.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'Recaudación automática de comisiones',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'Verificación de precios con oráculos',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'Distribución automática de ingresos',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'Enlace a documentación RWA',
+                        roadmap_title: 'Hoja de ruta',
+                        roadmap_sub: '¿Qué sigue?',
+                        faq_title: 'FAQ',
+                        faq_q1: '¿Necesito hacer staking?',
+                        faq_a1: 'No. Solo mantén USDS en Phantom, Solflare o Backpack. Las recompensas llegan automáticamente.',
+                        faq_q2: '¿Cada cuándo los pagos?',
+                        faq_a2: 'Cada 24 horas vía Permanent Delegate.',
+                        faq_q3: '¿Qué es Proof of Funds (POF)?',
+                        faq_a3: 'Compras USDS (10% del precio del producto) y envías el Swap Hash. Esto demuestra que tienes los fondos y estás listo para proceder.',
+                        faq_q4: '¿Dónde comprar USDS?',
+                        faq_q5: '¿Hay riesgo?',
+                        faq_a5: 'Como cualquier cripto, USDS tiene volatilidad. Pero el 67% está respaldado por activos reales (petróleo, gas, petroquímica), lo que reduce el riesgo.',
+                        community_title: 'Únete a la comunidad',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 Contáctanos',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'Ecosistema de petróleo y química',
+                        fintech_sub: '31 instrumentos energéticos. Calcula comisión, compra USDS, envía Proof of Funds (POF).',
+                        my_apps: '📋 Mis solicitudes',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'No es asesoramiento financiero. Siempre DYOR.',
+                        ai_greeting: '👋 ¡Hola! Soy tu asistente USDS. Pregúntame sobre petróleo, petroquímica, precios o Proof of Funds.',
+                        ai_q1: '¿Qué es USDS?',
+                        ai_q2: '¿Qué es POF?',
+                        ai_q3: 'Lista de productos',
+                        ai_placeholder: 'Pregúntame cualquier cosa...'
+                    },
+                    fr: {
+                        nav_about: 'À propos',
+                        nav_structure: 'Structure',
+                        nav_tokenomics: 'Tokenomics',
+                        nav_yield: 'Rendement',
+                        nav_fintech: 'Pétrole et chimie',
+                        nav_commodities: '💎 Produits',
+                        nav_vehicles: '🚀 Véhicules',
+                        nav_tech: 'Technologie',
+                        nav_roadmap: 'Feuille de route',
+                        buy_btn: 'Acheter USDS',
+                        explore_btn: 'Explorer l\'écosystème',
+                        hero_title: 'USDS — Pétrole et chimie',
+                        hero_desc: 'Pétrole, gaz, charbon, pétrochimie, polymères.',
+                        hero_sub: 'Achetez des actifs énergétiques en toute confiance. Prouvez votre intention avec 10% en USDS — nous vérifierons et vous contacterons sous 48 heures.',
+                        structure_title: '67% Actifs réels + 33% Rendement',
+                        structure_sub: 'USDS est adossé au pétrole, au gaz, au charbon et aux matières premières pétrochimiques utilisées dans la production de polymères.',
+                        structure_card1: '67% — Actifs réels',
+                        structure_card2: '33% — Rendement',
+                        tokenomics_title: 'Distribution transparente',
+                        tokenomics_sub: 'Offre totale: 1,000,000,000 USDS. Autorités Mint et Freeze révoquées.',
+                        t_label1: 'Prévente',
+                        t_desc1: 'Collecte initiale',
+                        t_label2: 'Liquidité',
+                        t_desc2: 'Bloquée 12 mois',
+                        t_label3: 'Équipe',
+                        t_desc3: 'Bloquée 24 mois',
+                        t_label4: 'Marketing',
+                        t_desc4: 'Partenariats, listages',
+                        t_label5: 'Réserve',
+                        t_desc5: 'Imprévus',
+                        yield_title: 'Vos revenus — toutes les 24 heures',
+                        yield_sub: 'Sans staking ni blocage. Gardez simplement USDS dans votre portefeuille.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '2% de chaque achat/vente va au pool de récompenses.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'Distribue automatiquement le pool aux détenteurs quotidiennement.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'Du pétrole, du gaz, de la pétrochimie, de l\'industrie et de la robotique.',
+                        calc_title: '💵 Calculateur de rendement',
+                        calc_sub: 'Entrez le montant en USD:',
+                        tech_title: 'Construit sur Solana Token-2022',
+                        tech_sub: 'Extensions modernes pour les tokens RWA.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'Collecte automatique des frais',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'Vérification des prix par oracles',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'Distribution automatique des revenus',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'Lien vers la documentation RWA',
+                        roadmap_title: 'Feuille de route',
+                        roadmap_sub: 'Et après?',
+                        faq_title: 'FAQ',
+                        faq_q1: 'Dois-je staker?',
+                        faq_a1: 'Non. Gardez simplement USDS dans Phantom, Solflare ou Backpack. Les récompenses arrivent automatiquement.',
+                        faq_q2: 'À quelle fréquence les paiements?',
+                        faq_a2: 'Toutes les 24 heures via Permanent Delegate.',
+                        faq_q3: 'Qu\'est-ce que Proof of Funds (POF)?',
+                        faq_a3: 'Vous achetez USDS (10% du prix du produit) et envoyez le Swap Hash. Cela prouve que vous avez les fonds et êtes prêt à procéder.',
+                        faq_q4: 'Où acheter USDS?',
+                        faq_q5: 'Y a-t-il un risque?',
+                        faq_a5: 'Comme toute cryptomonnaie, USDS est volatile. Mais 67% est adossé à des actifs réels (pétrole, gaz, pétrochimie), ce qui réduit le risque.',
+                        community_title: 'Rejoignez la communauté',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 Contactez-nous',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'Écosystème pétrole et chimie',
+                        fintech_sub: '31 instruments énergétiques. Calculez la commission, achetez USDS, soumettez Proof of Funds (POF).',
+                        my_apps: '📋 Mes demandes',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'Pas un conseil financier. Toujours DYOR.',
+                        ai_greeting: '👋 Bonjour! Je suis votre assistant USDS. Demandez-moi tout sur le pétrole, la pétrochimie, les prix ou Proof of Funds.',
+                        ai_q1: 'Qu\'est-ce que USDS?',
+                        ai_q2: 'Qu\'est-ce que POF?',
+                        ai_q3: 'Liste des produits',
+                        ai_placeholder: 'Demandez-moi n\'importe quoi...'
+                    },
+                    de: {
+                        nav_about: 'Über',
+                        nav_structure: 'Struktur',
+                        nav_tokenomics: 'Tokenomics',
+                        nav_yield: 'Rendite',
+                        nav_fintech: 'Öl und Chemie',
+                        nav_commodities: '💎 Produkte',
+                        nav_vehicles: '🚀 Fahrzeuge',
+                        nav_tech: 'Technologie',
+                        nav_roadmap: 'Fahrplan',
+                        buy_btn: 'USDS kaufen',
+                        explore_btn: 'Ökosystem erkunden',
+                        hero_title: 'USDS — Öl und Chemie',
+                        hero_desc: 'Öl, Gas, Kohle, Petrochemie, Polymere.',
+                        hero_sub: 'Kaufen Sie Energieanlagen mit Vertrauen. Beweisen Sie Ihre Absicht mit 10% in USDS — wir prüfen und kontaktieren Sie innerhalb von 48 Stunden.',
+                        structure_title: '67% Reale Vermögenswerte + 33% Rendite',
+                        structure_sub: 'USDS wird durch Öl, Gas, Kohle und petrochemische Rohstoffe für die Polymerproduktion gedeckt.',
+                        structure_card1: '67% — Reale Vermögenswerte',
+                        structure_card2: '33% — Rendite',
+                        tokenomics_title: 'Transparente Verteilung',
+                        tokenomics_sub: 'Gesamtangebot: 1,000,000,000 USDS. Mint- und Freeze-Behörden widerrufen.',
+                        t_label1: 'Presale',
+                        t_desc1: 'Erste Kapitalbeschaffung',
+                        t_label2: 'Liquidität',
+                        t_desc2: '12 Monate gesperrt',
+                        t_label3: 'Team',
+                        t_desc3: '24 Monate gesperrt',
+                        t_label4: 'Marketing',
+                        t_desc4: 'Partnerschaften, Listings',
+                        t_label5: 'Reserve',
+                        t_desc5: 'Unvorhergesehenes',
+                        yield_title: 'Dein Einkommen — alle 24 Stunden',
+                        yield_sub: 'Ohne Staking oder Sperren. Einfach USDS im Wallet halten.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '2% von jedem Kauf/Verkauf gehen in den Belohnungspool.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'Verteilt den Pool automatisch täglich an alle Halter.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'Von Öl, Gas, Petrochemie, Industrie und Robotik.',
+                        calc_title: '💵 Renditerechner',
+                        calc_sub: 'Betrag in USD eingeben:',
+                        tech_title: 'Auf Solana Token-2022 gebaut',
+                        tech_sub: 'Moderne Erweiterungen für RWA-Token.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'Automatische Gebührenerhebung',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'Preisprüfung durch Orakel',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'Automatische Einkommensverteilung',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'Link zur RWA-Dokumentation',
+                        roadmap_title: 'Fahrplan',
+                        roadmap_sub: 'Was kommt als nächstes?',
+                        faq_title: 'FAQ',
+                        faq_q1: 'Muss ich staken?',
+                        faq_a1: 'Nein. Halte einfach USDS in Phantom, Solflare oder Backpack. Belohnungen kommen automatisch.',
+                        faq_q2: 'Wie oft gibt es Auszahlungen?',
+                        faq_a2: 'Alle 24 Stunden über Permanent Delegate.',
+                        faq_q3: 'Was ist Proof of Funds (POF)?',
+                        faq_a3: 'Sie kaufen USDS (10% des Produktpreises) und senden den Swap Hash. Dies beweist, dass Sie die Mittel haben und bereit sind fortzufahren.',
+                        faq_q4: 'Wo kann man USDS kaufen?',
+                        faq_q5: 'Gibt es ein Risiko?',
+                        faq_a5: 'Wie jede Kryptowährung hat USDS Volatilität. Aber 67% sind durch reale Vermögenswerte (Öl, Gas, Petrochemie) gedeckt, was das Risiko reduziert.',
+                        community_title: 'Tritt der Community bei',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 Kontaktiere uns',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'Öl- und Chemie-Ökosystem',
+                        fintech_sub: '31 Energieinstrumente. Berechnen Sie die Provision, kaufen Sie USDS, reichen Sie Proof of Funds (POF) ein.',
+                        my_apps: '📋 Meine Anträge',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'Keine Finanzberatung. Immer DYOR.',
+                        ai_greeting: '👋 Hallo! Ich bin Ihr USDS-Assistent. Fragen Sie mich nach Öl, Petrochemie, Preisen oder Proof of Funds.',
+                        ai_q1: 'Was ist USDS?',
+                        ai_q2: 'Was ist POF?',
+                        ai_q3: 'Produktliste',
+                        ai_placeholder: 'Fragen Sie mich alles...'
+                    },
+                    zh: {
+                        nav_about: '关于',
+                        nav_structure: '结构',
+                        nav_tokenomics: '代币经济',
+                        nav_yield: '收益',
+                        nav_fintech: '石油与化学',
+                        nav_commodities: '💎 商品',
+                        nav_vehicles: '🚀 交通',
+                        nav_tech: '技术',
+                        nav_roadmap: '路线图',
+                        buy_btn: '购买 USDS',
+                        explore_btn: '探索生态系统',
+                        hero_title: 'USDS — 石油与化学',
+                        hero_desc: '石油、天然气、煤炭、石化、聚合物。',
+                        hero_sub: '自信地购买能源资产。用 10% USDS 证明您的意图 — 我们将在 48 小时内验证并联系您。',
+                        structure_title: '67% 真实资产 + 33% 收益',
+                        structure_sub: 'USDS 由石油、天然气、煤炭和聚合物生产中使用的石化原料支撑。',
+                        structure_card1: '67% — 真实资产',
+                        structure_card2: '33% — 收益',
+                        tokenomics_title: '透明分配',
+                        tokenomics_sub: '总供应量: 1,000,000,000 USDS。Mint 和 Freeze 权限已撤销。',
+                        t_label1: '预售',
+                        t_desc1: '初始融资',
+                        t_label2: '流动性',
+                        t_desc2: '锁定12个月',
+                        t_label3: '团队',
+                        t_desc3: '锁定24个月',
+                        t_label4: '营销',
+                        t_desc4: '合作、上市',
+                        t_label5: '储备',
+                        t_desc5: '应急资金',
+                        yield_title: '你的收入 — 每24小时',
+                        yield_sub: '无需质押或锁定。只需在钱包中持有 USDS。',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '每笔买卖的2%进入奖励池。',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: '每天自动将池子分配给所有持有者。',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: '来自石油、天然气、石化、工业和机器人。',
+                        calc_title: '💵 收益计算器',
+                        calc_sub: '输入美元金额:',
+                        tech_title: '基于 Solana Token-2022 构建',
+                        tech_sub: '针对RWA代币的现代扩展。',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: '自动收取费用到奖励池',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: '通过预言机检查价格',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: '自动分配收入',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'RWA文档链接',
+                        roadmap_title: '路线图',
+                        roadmap_sub: '下一步是什么？',
+                        faq_title: '常见问题',
+                        faq_q1: '我需要质押吗？',
+                        faq_a1: '不需要。只需在 Phantom、Solflare 或 Backpack 中持有 USDS。奖励自动到账。',
+                        faq_q2: '多久支付一次？',
+                        faq_a2: '每24小时通过 Permanent Delegate 支付。',
+                        faq_q3: '什么是 Proof of Funds (POF)？',
+                        faq_a3: '您购买 USDS（商品价格的10%）并提交 Swap Hash。这证明您有资金并准备进行交易。',
+                        faq_q4: '在哪里购买 USDS？',
+                        faq_q5: '有风险吗？',
+                        faq_a5: '与任何加密货币一样，USDS 有波动性。但67%由真实资产（石油、天然气、石化）支撑，降低了风险。',
+                        community_title: '加入社区',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 联系我们',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: '石油与化学生态系统',
+                        fintech_sub: '31个能源工具。计算佣金，购买 USDS，提交 Proof of Funds (POF)。',
+                        my_apps: '📋 我的申请',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: '非财务建议。始终 DYOR。',
+                        ai_greeting: '👋 你好！我是你的 USDS 助手。问我关于石油、石化、价格或 Proof of Funds 的问题。',
+                        ai_q1: '什么是 USDS？',
+                        ai_q2: '什么是 POF？',
+                        ai_q3: '商品列表',
+                        ai_placeholder: '问我任何问题...'
+                    },
+                    ja: {
+                        nav_about: '概要',
+                        nav_structure: '構造',
+                        nav_tokenomics: 'トークノミクス',
+                        nav_yield: '利回り',
+                        nav_fintech: '石油と化学',
+                        nav_commodities: '💎 商品',
+                        nav_vehicles: '🚀 乗り物',
+                        nav_tech: 'テクノロジー',
+                        nav_roadmap: 'ロードマップ',
+                        buy_btn: 'USDSを購入',
+                        explore_btn: 'エコシステムを探索',
+                        hero_title: 'USDS — 石油と化学',
+                        hero_desc: '石油、ガス、石炭、石油化学、ポリマー。',
+                        hero_sub: 'エネルギー資産を自信を持って購入。10% USDS で意図を証明 — 48時間以内に検証しご連絡します。',
+                        structure_title: '67% 実物資産 + 33% 利回り',
+                        structure_sub: 'USDSは石油、ガス、石炭、ポリマー生産に使用される石油化学原料によって裏付けられています。',
+                        structure_card1: '67% — 実物資産',
+                        structure_card2: '33% — 利回り',
+                        tokenomics_title: '透明な分配',
+                        tokenomics_sub: '総供給量: 1,000,000,000 USDS。MintとFreezeの権限は取り消されました。',
+                        t_label1: 'プレセール',
+                        t_desc1: '初期資金調達',
+                        t_label2: '流動性',
+                        t_desc2: '12ヶ月ロック',
+                        t_label3: 'チーム',
+                        t_desc3: '24ヶ月ロック',
+                        t_label4: 'マーケティング',
+                        t_desc4: 'パートナーシップ、上場',
+                        t_label5: '準備金',
+                        t_desc5: '予備',
+                        yield_title: 'あなたの収入 — 24時間ごと',
+                        yield_sub: 'ステーキングやロックは不要。USDSをウォレットに保有するだけ。',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '売買の2%が報酬プールに入ります。',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: '毎日自動的にプールを全保有者に分配します。',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: '石油、ガス、石油化学、産業、ロボティクスから。',
+                        calc_title: '💵 利回り計算機',
+                        calc_sub: 'USD金額を入力:',
+                        tech_title: 'Solana Token-2022上に構築',
+                        tech_sub: 'RWAトークンのためのモダンな拡張機能。',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: '自動的に手数料を収集',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'オラクルによる価格チェック',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: '自動収入分配',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'RWAドキュメントへのリンク',
+                        roadmap_title: 'ロードマップ',
+                        roadmap_sub: '次のステップは？',
+                        faq_title: 'FAQ',
+                        faq_q1: 'ステーキングは必要ですか？',
+                        faq_a1: 'いいえ。Phantom、Solflare、BackpackでUSDSを保有するだけで、自動的に報酬が届きます。',
+                        faq_q2: '支払いの頻度は？',
+                        faq_a2: 'Permanent Delegateを通じて24時間ごと。',
+                        faq_q3: 'Proof of Funds (POF) とは？',
+                        faq_a3: 'USDS（商品価格の10%）を購入し、Swap Hashを送信します。これは資金を持ち、取引を進める準備ができていることを証明します。',
+                        faq_q4: 'USDSはどこで買えますか？',
+                        faq_q5: 'リスクはありますか？',
+                        faq_a5: '他の暗号資産と同様に変動性がありますが、67%が実物資産（石油、ガス、石油化学）で裏付けられており、リスクを低減しています。',
+                        community_title: 'コミュニティに参加',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 お問い合わせ',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: '石油と化学のエコシステム',
+                        fintech_sub: '31のエネルギー商品。手数料を計算し、USDSを購入し、Proof of Funds (POF) を提出。',
+                        my_apps: '📋 申請一覧',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: '財務アドバイスではありません。常にDYOR。',
+                        ai_greeting: '👋 こんにちは！私はUSDSアシスタントです。石油、石油化学、価格、Proof of Fundsについて質問してください。',
+                        ai_q1: 'USDSとは？',
+                        ai_q2: 'POFとは？',
+                        ai_q3: '商品リスト',
+                        ai_placeholder: '何でも質問してください...'
+                    },
+                    ar: {
+                        nav_about: 'حول',
+                        nav_structure: 'الهيكل',
+                        nav_tokenomics: 'اقتصاديات الرمز',
+                        nav_yield: 'العائد',
+                        nav_fintech: 'النفط والكيمياء',
+                        nav_commodities: '💎 السلع',
+                        nav_vehicles: '🚀 المركبات',
+                        nav_tech: 'التقنية',
+                        nav_roadmap: 'الخريطة',
+                        buy_btn: 'شراء USDS',
+                        explore_btn: 'استكشاف النظام البيئي',
+                        hero_title: 'USDS — النفط والكيمياء',
+                        hero_desc: 'النفط والغاز والفحم والبتروكيماويات والبوليمرات.',
+                        hero_sub: 'اشترِ الأصول الطاقة بثقة. أثبت نيتك بـ 10% من USDS — سنتحقق ونتواصل معك خلال 48 ساعة.',
+                        structure_title: '67% أصول حقيقية + 33% عائد',
+                        structure_sub: 'USDS مدعوم بالنفط والغاز والفحم والمواد الخام البتروكيماوية المستخدمة في إنتاج البوليمرات.',
+                        structure_card1: '67% — أصول حقيقية',
+                        structure_card2: '33% — عائد',
+                        tokenomics_title: 'توزيع شفاف',
+                        tokenomics_sub: 'إجمالي العرض: 1,000,000,000 USDS. تم إلغاء صلاحيات Mint و Freeze.',
+                        t_label1: 'ما قبل البيع',
+                        t_desc1: 'جمع رأس المال الأولي',
+                        t_label2: 'السيولة',
+                        t_desc2: 'مجمدة 12 شهرًا',
+                        t_label3: 'الفريق',
+                        t_desc3: 'مجمدة 24 شهرًا',
+                        t_label4: 'التسويق',
+                        t_desc4: 'شراكات، إدراجات',
+                        t_label5: 'احتياطي',
+                        t_desc5: 'طوارئ',
+                        yield_title: 'دخلك — كل 24 ساعة',
+                        yield_sub: 'بدون تخزين أو قفل. فقط احتفظ بـ USDS في محفظتك.',
+                        yield_card1_title: 'Transfer Fee 2%',
+                        yield_card1: '2% من كل عملية شراء/بيع تذهب إلى مجمع المكافآت.',
+                        yield_card2_title: 'Permanent Delegate',
+                        yield_card2: 'يوزع المجمع تلقائيًا على جميع الحائزين يوميًا.',
+                        yield_card3_title: '~22% APY',
+                        yield_card3: 'من النفط والغاز والبتروكيماويات والصناعة والروبوتات.',
+                        calc_title: '💵 حاسبة العائد',
+                        calc_sub: 'أدخل المبلغ بالدولار:',
+                        tech_title: 'مبني على Solana Token-2022',
+                        tech_sub: 'إضافات حديثة لرموز RWA.',
+                        tech_name1: 'Transfer Fee (2%)',
+                        tech_desc1: 'تحصيل الرسوم تلقائيًا',
+                        tech_name2: 'Transfer Hook',
+                        tech_desc2: 'فحص الأسعار عبر أوراكل',
+                        tech_name3: 'Permanent Delegate',
+                        tech_desc3: 'توزيع الدخل تلقائيًا',
+                        tech_name4: 'Metadata',
+                        tech_desc4: 'رابط توثيق RWA',
+                        roadmap_title: 'الخريطة',
+                        roadmap_sub: 'ما التالي؟',
+                        faq_title: 'الأسئلة الشائعة',
+                        faq_q1: 'هل أحتاج إلى التخزين؟',
+                        faq_a1: 'لا. فقط احتفظ بـ USDS في Phantom أو Solflare أو Backpack. المكافآت تأتي تلقائيًا.',
+                        faq_q2: 'كم مرة المدفوعات؟',
+                        faq_a2: 'كل 24 ساعة عبر Permanent Delegate.',
+                        faq_q3: 'ما هو Proof of Funds (POF)؟',
+                        faq_a3: 'تشتري USDS (10% من سعر المنتج) وترسل Swap Hash. هذا يثبت أن لديك الأموال وأنت مستعد للمتابعة.',
+                        faq_q4: 'أين يمكن شراء USDS؟',
+                        faq_q5: 'هل هناك خطر؟',
+                        faq_a5: 'مثل أي عملة رقمية، USDS متقلب. لكن 67% مدعوم بأصول حقيقية (النفط والغاز والبتروكيماويات)، مما يقلل المخاطر.',
+                        community_title: 'انضم إلى المجتمع',
+                        community_twitter: '🐦 X (Twitter)',
+                        community_telegram: '💬 Telegram',
+                        community_contact: '📧 اتصل بنا',
+                        community_explorer: '🔍 Solana Explorer',
+                        community_gecko: '📊 Geckoterminal',
+                        fintech_title: 'النظام البيئي للنفط والكيمياء',
+                        fintech_sub: '31 أداة طاقية. احسب العمولة، اشتر USDS، قدّم Proof of Funds (POF).',
+                        my_apps: '📋 طلباتي',
+                        footer_text: 'Solana Token-2022',
+                        footer_disclaimer: 'ليس نصيحة مالية. دائماً DYOR.',
+                        ai_greeting: '👋 مرحباً! أنا مساعد USDS الخاص بك. اسألني عن النفط والبتروكيماويات والأسعار أو Proof of Funds.',
+                        ai_q1: 'ما هو USDS؟',
+                        ai_q2: 'ما هو POF؟',
+                        ai_q3: 'قائمة السلع',
+                        ai_placeholder: 'اسألني أي شيء...'
+                    }
+                };
+
+                const langBtns = document.querySelectorAll('.lang-btn');
+                const elements = document.querySelectorAll('[data-i18n]');
+                let currentLang = localStorage.getItem('eurs_lang') || 'en';
+
+                function applyLanguage(lang) {
+                    const t = translations[lang] || translations.en;
+                    elements.forEach(el => {
+                        const key = el.dataset.i18n;
+                        if (t[key] !== undefined) {
+                            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                                el.placeholder = t[key];
+                            } else if (el.tagName === 'BUTTON' && el.classList.contains('ai-qbtn')) {
+                                el.textContent = t[key];
+                            } else {
+                                el.innerHTML = t[key];
+                            }
+                        }
+                    });
+                    langBtns.forEach(b => b.classList.remove('active'));
+                    document.querySelector(`.lang-btn[data-lang="${lang}"]`)?.classList.add('active');
+                    localStorage.setItem('eurs_lang', lang);
+                    currentLang = lang;
+                }
+
+                langBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lang = this.dataset.lang;
+                        applyLanguage(lang);
+                    });
+                });
+
+                applyLanguage(currentLang);
+                window.applyLanguage = applyLanguage;
+            })();
+
+            // ---- ФОН ----
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h, particles = [];
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            for (let i = 0; i < 90; i++) {
+                particles.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    r: Math.random() * 2.5 + 0.5,
+                    dx: (Math.random() - 0.5) * 0.5,
+                    dy: (Math.random() - 0.5) * 0.5,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, w, h);
+                particles.forEach(p => {
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if (p.x < 0 || p.x > w) p.dx *= -1;
+                    if (p.y < 0 || p.y > h) p.dy *= -1;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(212, 168, 67, ${p.alpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(drawParticles);
+            }
+            drawParticles();
+
+            // ---- ПАРЯЩИЕ ТОКЕНЫ ----
+            const symbols = ['✦', '♦', '◈', '✧', '⛁', '🛢️', '💎', '✦'];
+            const container = document.getElementById('floatingTokens');
+            for (let i = 0; i < 18; i++) {
+                const el = document.createElement('span');
+                el.className = 'float-token';
+                el.textContent = symbols[i % symbols.length];
+                el.style.left = Math.random() * 95 + '%';
+                el.style.fontSize = (Math.random() * 2.4 + 1.2) + 'rem';
+                el.style.animationDuration = (Math.random() * 30 + 20) + 's';
+                el.style.animationDelay = (Math.random() * 25) + 's';
+                container.appendChild(el);
+            }
+
+            // ---- БУРГЕР ----
+            const burger = document.getElementById('burger');
+            const nav = document.getElementById('nav');
+            burger.addEventListener('click', () => nav.classList.toggle('open'));
+            document.querySelectorAll('.nav-list a').forEach(link => {
+                link.addEventListener('click', () => nav.classList.remove('open'));
+            });
+
+            // ---- FAQ ----
+            document.querySelectorAll('.faq-question').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const item = btn.parentElement;
+                    const isActive = item.classList.contains('active');
+                    document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('active'));
+                    if (!isActive) item.classList.add('active');
+                });
+            });
+
+            // ---- КАЛЬКУЛЯТОР ----
+            const calcInput = document.getElementById('calcInput');
+            const calcResult = document.getElementById('calcResult');
+
+            function updateCalc() {
+                const val = parseFloat(calcInput.value) || 0;
+                const year = val * 1.22;
+                const month = val * 1.022;
+                calcResult.textContent = `≈ $${year.toFixed(2)} after 1 year (≈ $${month.toFixed(2)} after 1 month)`;
+            }
+            calcInput.addEventListener('input', updateCalc);
+            updateCalc();
+
+            // ---- ИИ-ЧАТ ----
+            const chat = document.getElementById('aiChat');
+            const toggleBtn = document.getElementById('aiChatToggle');
+            const closeBtn = document.getElementById('aiCloseChat');
+            const minimizeBtn = document.getElementById('aiMinimize');
+            const header = document.getElementById('aiChatHeader');
+            const messages = document.getElementById('aiMessages');
+            const input = document.getElementById('aiInput');
+            const sendBtn = document.getElementById('aiSend');
+            const quickBtns = document.querySelectorAll('.ai-qbtn');
+
+            let isMinimized = false;
+            let isOpen = false;
+
+            toggleBtn.addEventListener('click', () => {
+                chat.classList.toggle('open');
+                isOpen = chat.classList.contains('open');
+                toggleBtn.classList.toggle('hidden', isOpen);
+                if (isOpen) input.focus();
+            });
+
+            closeBtn.addEventListener('click', () => {
+                chat.classList.remove('open');
+                isOpen = false;
+                toggleBtn.classList.remove('hidden');
+            });
+
+            minimizeBtn.addEventListener('click', () => {
+                isMinimized = !isMinimized;
+                chat.classList.toggle('minimized', isMinimized);
+                minimizeBtn.textContent = isMinimized ? '+' : '−';
+            });
+
+            header.addEventListener('click', (e) => {
+                if (e.target.closest('button')) return;
+                minimizeBtn.click();
+            });
+
+            function sendMessage(text) {
+                if (!text.trim()) return;
+                const userDiv = document.createElement('div');
+                userDiv.className = 'ai-msg-user';
+                userDiv.textContent = text;
+                messages.appendChild(userDiv);
+                input.value = '';
+
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'ai-msg-bot';
+                typingDiv.textContent = '⏳ ...';
+                typingDiv.id = 'typingIndicator';
+                messages.appendChild(typingDiv);
+                messages.scrollTop = messages.scrollHeight;
+
+                setTimeout(() => {
+                    const typing = document.getElementById('typingIndicator');
+                    if (typing) typing.remove();
+                    const reply = getAIResponse(text);
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'ai-msg-bot';
+                    botDiv.innerHTML = reply;
+                    messages.appendChild(botDiv);
+                    messages.scrollTop = messages.scrollHeight;
+                }, 400 + Math.random() * 400);
+            }
+
+            sendBtn.addEventListener('click', () => sendMessage(input.value));
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendMessage(input.value);
+            });
+
+            quickBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sendMessage(btn.dataset.q);
+                });
+            });
+
+            function getAIResponse(query) {
+                const q = query.toLowerCase();
+                if (q.includes('what') && q.includes('usds')) {
+                    return '🛢️ <b>USDS</b> is a Solana Token-2022 RWA token.<br>• 67% backed by oil, gas, coal &amp; petrochemicals<br>• 33% yield from industry &amp; robotics<br>• Daily payouts (~22% APY)<br>• 31 energy instruments integrated';
+                }
+                if (q.includes('apy') || q.includes('yield')) {
+                    return '📊 <b>APY: ~22%</b><br>• Transfer Fee: 2%<br>• Daily distributions via Permanent Delegate<br>• From oil, gas, petrochemicals, industry &amp; robotics';
+                }
+                if (q.includes('pof') || q.includes('proof')) {
+                    return '🔐 <b>Proof of Funds (POF)</b><br>1. Calculate commission<br>2. Buy USDS on Jupiter<br>3. Submit Swap Hash<br>4. We verify and contact you within 48 hours';
+                }
+                if (q.includes('fintech') || q.includes('list')) {
+                    return '🏦 <b>31 Energy Instruments:</b><br>Oil Futures, Gas Futures, Coal Contracts, Polymer Swaps, Petrochemical Options, Industry Bonds, Robotics Equity, Carbon Credits, Energy Index, Green Energy Bonds, Infrastructure Funds, ... and more!';
+                }
+                return '🤔 Try asking:<br>• "What is USDS?"<br>• "How much APY?"<br>• "What is POF?"<br>• "List energy products"';
+            }
+
+            toggleBtn.classList.remove('hidden');
+
+            // ---- FINTECH DATA (OIL & CHEMICALS) ----
+            const fintechData = [
+                { icon: '🛢️', name: 'Oil Futures', desc: 'WTI crude oil futures contracts.', rate: 0.025 },
+                { icon: '🔥', name: 'Gas Futures', desc: 'Natural gas futures contracts.', rate: 0.015 },
+                { icon: '⛏️', name: 'Coal Contracts', desc: 'Thermal coal supply agreements.', rate: 0.02 },
+                { icon: '🧪', name: 'Polymer Swaps', desc: 'PE/PP polymer price swaps.', rate: 0.018 },
+                { icon: '🔬', name: 'Petrochemical Options', desc: 'Options on ethylene, propylene.', rate: 0.035 },
+                { icon: '🏭', name: 'Industry Bonds', desc: 'Bonds from industrial sector.', rate: 0.008 },
+                { icon: '🤖', name: 'Robotics Equity', desc: 'Equity in robotics companies.', rate: 0.015 },
+                { icon: '🌱', name: 'Carbon Credits', desc: 'Tokenized carbon offsets.', rate: 0.02 },
+                { icon: '📈', name: 'Energy Index', desc: 'Basket of energy commodities.', rate: 0.01 },
+                { icon: '🌿', name: 'Green Energy Bonds', desc: 'Bonds for renewable energy.', rate: 0.008 },
+                { icon: '🏗️', name: 'Infrastructure Funds', desc: 'Infrastructure investment funds.', rate: 0.012 },
+                { icon: '🔄', name: 'Revolving Credit', desc: 'Revolving credit for energy companies.', rate: 0.025 },
+                { icon: '📊', name: 'Securitization', desc: 'Pool energy assets into tokens.', rate: 0.012 },
+                { icon: '💳', name: 'Factoring', desc: 'Buy energy receivables at discount.', rate: 0.015 },
+                { icon: '📉', name: 'Forfaiting', desc: 'Purchase long-term energy receivables.', rate: 0.015 },
+                { icon: '🤝', name: 'Trust Management', desc: 'Asset management with USDS.', rate: 0.008 },
+                { icon: '🌍', name: 'Cross-Border Payments', desc: 'Fast payments via Solana.', rate: 0.005 },
+                { icon: '💵', name: 'Crypto Acquiring', desc: 'Accept USDS payments in business.', rate: 0.018 },
+                { icon: '🔒', name: 'Custody', desc: 'Secure storage with multisig.', rate: 0.005 },
+                { icon: '⚡', name: 'DeFi Staking', desc: 'Auto-staking in Solana pools.', rate: 0.005 },
+                { icon: '🏦', name: 'Collateralized Lending', desc: 'Loans backed by USDS.', rate: 0.025 },
+                { icon: '💎', name: 'Gold-Backed USDS', desc: 'Buy tokens backed by gold.', rate: 0.005 },
+                { icon: '📊', name: 'Stablecoin Mode', desc: 'Fix USDS price to USD for 30 days.', rate: 0.005 },
+                { icon: '🐘', name: 'Three Elephants Index', desc: 'Portfolio of USDS, EURS, EUSD.', rate: 0.01 },
+                { icon: '🤖', name: 'AI Trading', desc: 'Automated energy trading.', rate: 0.015 },
+                { icon: '📈', name: 'Portfolio Analysis', desc: 'Analyze all your assets.', rate: 0.005 },
+                { icon: '🧮', name: 'Dividend Calculator', desc: 'Calculate expected yield.', rate: 0.005 },
+                { icon: '🔨', name: 'Weekly Auctions', desc: 'Bid on energy contracts.', rate: 0.02 },
+                { icon: '📜', name: 'Fixed-Income Bonds', desc: 'Bonds with guaranteed coupon in USDS.', rate: 0.008 },
+                { icon: '📉', name: 'Tokenized Derivatives', desc: 'Options and futures on energy.', rate: 0.035 },
+                { icon: '🏛️', name: 'Investment Funds', desc: 'AI-managed funds with RWA.', rate: 0.015 },
+            ];
+
+            // ---- МОДАЛКИ ----
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalBody = document.getElementById('modalBody');
+            const modalClose = document.getElementById('modalClose');
+
+            let currentProduct = null;
+            let currentStep = 'calculator';
+            let appData = {};
+            let currentIdx = 0;
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                currentProduct = null;
+                currentStep = 'calculator';
+                appData = {};
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            // ---- РАСЧЁТ КОМИССИИ (ДЛЯ USDS) ----
+            function calculateCommission(product, amount, term) {
+                let fee = 0;
+                let description = '';
+
+                switch (product.name) {
+                    case 'Oil Futures':
+                        fee = Math.max(amount * 0.025 * (term / 12), 2500);
+                        description = `2.5% annualized (min fee $2,500)`;
+                        break;
+                    case 'Gas Futures':
+                        fee = Math.max(amount * 0.015 * (term / 12), 2500);
+                        description = `1.5% annualized (min fee $2,500)`;
+                        break;
+                    case 'Coal Contracts':
+                        fee = Math.max(amount * 0.02 * (term / 12), 2500);
+                        description = `2% annualized (min fee $2,500)`;
+                        break;
+                    case 'Polymer Swaps':
+                        fee = Math.max(amount * 0.018 * (term / 12), 2500);
+                        description = `1.8% annualized (min fee $2,500)`;
+                        break;
+                    case 'Petrochemical Options':
+                        fee = Math.max(amount * 0.035 * (term / 12), 2500);
+                        description = `3.5% annualized (min fee $2,500)`;
+                        break;
+                    case 'Industry Bonds':
+                        fee = Math.max(amount * 0.008 * (term / 12), 1000);
+                        description = `0.8% annualized (min fee $1,000)`;
+                        break;
+                    case 'Robotics Equity':
+                        fee = Math.max(amount * 0.015 * (term / 12), 1500);
+                        description = `1.5% annualized (min fee $1,500)`;
+                        break;
+                    case 'Carbon Credits':
+                        fee = Math.max(amount * 0.02 * (term / 12), 2000);
+                        description = `2% annualized (min fee $2,000)`;
+                        break;
+                    case 'Energy Index':
+                        fee = Math.max(amount * 0.01 * (term / 12), 1000);
+                        description = `1% annualized (min fee $1,000)`;
+                        break;
+                    case 'Green Energy Bonds':
+                        fee = Math.max(amount * 0.008 * (term / 12), 1000);
+                        description = `0.8% annualized (min fee $1,000)`;
+                        break;
+                    case 'Infrastructure Funds':
+                        fee = Math.max(amount * 0.012 * (term / 12), 1500);
+                        description = `1.2% annualized (min fee $1,500)`;
+                        break;
+                    default:
+                        fee = amount * 0.025 * (term / 12);
+                        description = `Standard fee (2.5% annualized)`;
+                }
+
+                const usds = fee / 1.15;
+                return { fee, usds, description };
+            }
+
+            // ---- РЕНДЕР МОДАЛКИ ----
+            function renderModal(product, idx) {
+                if (!product) {
+                    alert('Error: Product not found.');
+                    return;
+                }
+
+                currentProduct = product;
+                currentIdx = idx;
+
+                const step = currentStep;
+                let html = `<h2>${product.icon} ${product.name}</h2><span class="step-indicator">Step: ${step}</span><p style="color:var(--text-muted);margin-bottom:16px;">${product.desc}</p>`;
+
+                if (step === 'calculator') {
+                    html += `
+                        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;background:rgba(212,168,67,0.08);padding:10px;border-radius:8px;">
+                            💡 <strong>What is this?</strong> Calculate the commission for your selected energy product.
+                            This is the amount you need to reserve in USDS as <strong>Proof of Funds (POF)</strong>.
+                            POF proves your serious intent to proceed with the transaction.
+                        </p>
+                        <label>Amount (USD):</label>
+                        <input type="number" id="calcAmount" value="100000" min="1000" step="1000" />
+                        <label>Term (months):</label>
+                        <input type="number" id="calcTerm" value="12" min="1" max="60" />
+                        <button class="btn btn-primary" onclick="calculateAndShow()">Calculate Commission</button>
+                        <div class="result-box" id="calcResultBox">
+                            Commission: $2,500.00 (2.5%) ≈ 2,173.91 USDS
+                            <br><span style="font-size:0.75rem;color:var(--text-muted);">Fee structure: 2.5% annualized fee</span>
+                        </div>
+                        <button class="btn btn-success" onclick="goToBuy()" style="margin-top:16px;">Next: Buy USDS ➜</button>
+                    `;
+                } else if (step === 'buy') {
+                    const usdsAmount = appData.usdsAmount || 2173.91;
+                    const commission = appData.commission || 2500;
+                    const contractId = 'USDS-' + Date.now().toString(36).toUpperCase();
+                    appData.contractId = contractId;
+
+                    const jupiterLink =
+                        `https://jup.ag/swap/USDC-USDS?amount=${Math.round(usdsAmount * 100)}`;
+
+                    const usdsContract = '7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF';
+
+                    html += `
+                        <div class="result-box">
+                            ✅ Commission: $${commission.toFixed(2)} ≈ ${usdsAmount.toFixed(2)} USDS
+                            <br><span style="font-size:0.8rem;color:var(--text-muted);">Exchange rate: 1 USDS = 1.15 USDC</span>
+                            <br><br>
+                            <strong>📄 Contract ID:</strong> <span style="color:var(--gold);font-weight:700;font-size:1.1rem;">${contractId}</span>
+                        </div>
+                        <p style="font-size:0.9rem;color:var(--text-muted);margin:12px 0;background:rgba(212,168,67,0.08);padding:10px;border-radius:8px;">
+                            🔐 <strong>Proof of Funds (POF) — Step 2 of 4</strong><br>
+                            Buy USDS on Jupiter to prove you have the funds. 
+                            After the swap, copy the <strong>Swap Hash (transaction ID)</strong> and paste it below.
+                            This is NOT a payment — it's proof of your serious intent.
+                            <br><br>
+                            <strong>Contract ID:</strong> ${contractId} — use this reference in all communications.
+                        </p>
+                        <label>Buy USDS on Jupiter:</label>
+                        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:8px;">
+                            Click the button below to buy ~${usdsAmount.toFixed(2)} USDS on Jupiter
+                        </p>
+                        <a href="${jupiterLink}" target="_blank" class="btn btn-buy" style="display:block;text-align:center;width:100%;margin-top:8px;">
+                            🚀 Buy USDS on Jupiter
+                        </a>
+                        <div style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:6px;border:1px dashed var(--border);">
+                            📋 <strong>USDS Token Contract:</strong> <code style="background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-size:0.75rem;word-break:break-all;">${usdsContract}</code>
+                            <br><span style="font-size:0.7rem;">Use this address to verify the token on Solana Explorer</span>
+                        </div>
+                        <label style="margin-top:16px;">Swap Hash (transaction ID):</label>
+                        <input type="text" id="txHash" placeholder="Paste your swap hash here..." value="" />
+                        <button class="btn btn-primary" onclick="verifyPOF()">✅ Verify Proof of Funds (POF)</button>
+                        <div id="pofResult" style="margin-top:12px;display:none;padding:10px;background:rgba(46,125,50,0.2);border-radius:8px;color:#4caf50;">
+                            ✅ POF verified! Swap hash is valid.
+                        </div>
+                    `;
+                } else if (step === 'contacts') {
+                    html += `
+                        <div class="result-box" style="margin-bottom:16px;">
+                            ✅ Proof of Funds verified!
+                            <br>Contract ID: <span class="hash-box">${appData.contractId || 'N/A'}</span>
+                            <br>Swap Hash: <span class="hash-box">${appData.txHash || 'Not provided'}</span>
+                            <br>Reserved: ${appData.usdsAmount?.toFixed(2) || '0.00'} USDS
+                        </div>
+                        <p style="font-size:0.9rem;color:var(--text-muted);margin:12px 0;background:rgba(212,168,67,0.08);padding:10px;border-radius:8px;">
+                            📋 <strong>Final Step — Your Contact Details</strong><br>
+                            Please provide your contact information. We will verify your POF and send you 
+                            the contract package within <strong>48 hours</strong>.
+                        </p>
+                        <label>Full Name *</label>
+                        <input type="text" id="contactName" placeholder="John Doe" />
+                        <label>Email *</label>
+                        <input type="email" id="contactEmail" placeholder="john@example.com" />
+                        <label>Telegram / WhatsApp</label>
+                        <input type="text" id="contactTelegram" placeholder="@username or +123456789" />
+                        <label>Company Name</label>
+                        <input type="text" id="contactCompany" placeholder="Your company" />
+                        <button class="btn btn-success" onclick="submitApplication()">Submit Application</button>
+                    `;
+                } else if (step === 'final') {
+                    const id = appData.contractId || 'USDS-' + Date.now().toString(36).toUpperCase();
+                    html += `
+                        <div class="result-box" style="border:2px solid var(--gold);">
+                            ✅ <b>Application #${id} Submitted!</b>
+                            <br><br>
+                            <span class="status-badge status-pending">⏳ Awaiting Verification</span>
+                            <br><br>
+                            <b>What happens next?</b><br>
+                            1. We will verify your Proof of Funds (Swap Hash)<br>
+                            2. We will contact you via email/telegram within <b>48 hours</b><br>
+                            3. We will send you the full contract package for signing<br>
+                            4. After signing, you pay the commission in USDS<br>
+                            <br>
+                            <span style="font-size:0.8rem;color:var(--text-muted);">Application saved locally. You can view it in "My Applications".</span>
+                        </div>
+                        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    `;
+                    saveApplication(id, currentProduct.name, appData);
+                }
+
+                modalBody.innerHTML = html;
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                document.getElementById('modalContent').scrollTop = 0;
+            }
+
+            // ---- ГЛОБАЛЬНЫЕ ФУНКЦИИ ----
+            window.calculateAndShow = function() {
+                const amount = parseFloat(document.getElementById('calcAmount').value) || 0;
+                const term = parseFloat(document.getElementById('calcTerm').value) || 12;
+                if (!currentProduct) return;
+
+                const result = calculateCommission(currentProduct, amount, term);
+                appData.commission = result.fee;
+                appData.usdsAmount = result.usds;
+                appData.amount = amount;
+                appData.term = term;
+
+                document.getElementById('calcResultBox').innerHTML = `
+                    Commission: $${result.fee.toFixed(2)} (${(currentProduct.rate*100).toFixed(1)}%) ≈ ${result.usds.toFixed(2)} USDS
+                    <br><span style="font-size:0.75rem;color:var(--text-muted);">${result.description}</span>
+                `;
+            };
+
+            window.goToBuy = function() {
+                if (!appData.usdsAmount) {
+                    const amount = parseFloat(document.getElementById('calcAmount')?.value) || 100000;
+                    const term = parseFloat(document.getElementById('calcTerm')?.value) || 12;
+                    const result = calculateCommission(currentProduct, amount, term);
+                    appData.commission = result.fee;
+                    appData.usdsAmount = result.usds;
+                    appData.amount = amount;
+                    appData.term = term;
+                }
+                currentStep = 'buy';
+                renderModal(currentProduct, currentIdx);
+            };
+
+            window.verifyPOF = function() {
+                const txHash = document.getElementById('txHash')?.value?.trim() || '';
+                if (txHash.length < 10) {
+                    alert('⚠️ Please enter a valid Swap Hash (at least 10 characters).');
+                    return;
+                }
+                appData.txHash = txHash;
+                const resultDiv = document.getElementById('pofResult');
+                if (resultDiv) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.textContent = '✅ POF verified! Swap hash is valid.';
+                    setTimeout(() => {
+                        currentStep = 'contacts';
+                        renderModal(currentProduct, currentIdx);
+                    }, 1500);
+                }
+            };
+
+            window.submitApplication = function() {
+                const name = document.getElementById('contactName')?.value?.trim();
+                const email = document.getElementById('contactEmail')?.value?.trim();
+                if (!name || !email) {
+                    alert('Please fill in your name and email.');
+                    return;
+                }
+                appData.contactName = name;
+                appData.contactEmail = email;
+                appData.contactTelegram = document.getElementById('contactTelegram')?.value?.trim() || 'Not provided';
+                appData.contactCompany = document.getElementById('contactCompany')?.value?.trim() || 'Not provided';
+
+                const id = appData.contractId || 'USDS-' + Date.now().toString(36).toUpperCase();
+
+                const templateParams = {
+                    id: id,
+                    productName: currentProduct?.name || 'Energy Product',
+                    productType: 'energy',
+                    usdsAmount: appData.usdsAmount?.toFixed(2) || '0.00',
+                    date: new Date().toLocaleString(),
+                    contactName: appData.contactName,
+                    contactEmail: appData.contactEmail,
+                    contactTelegram: appData.contactTelegram,
+                    contactCompany: appData.contactCompany,
+                    txHash: appData.txHash || 'Not provided',
+                    contractId: id
+                };
+
+                emailjs.send(
+                    'service_567sck4',
+                    'template_wfeaqqq',
+                    templateParams
+                ).then(function(response) {
+                    console.log('✅ Email sent!', response);
+                    saveApplication(id, currentProduct?.name || 'Energy Product', appData);
+                    currentStep = 'final';
+                    renderModal(currentProduct, currentIdx);
+                }, function(error) {
+                    console.error('❌ Email failed:', error);
+                    alert('⚠️ Failed to send email. Please try again.');
+                    saveApplication(id, currentProduct?.name || 'Energy Product', appData);
+                    currentStep = 'final';
+                    renderModal(currentProduct, currentIdx);
+                });
+            };
+
+            // ---- СОХРАНЕНИЕ ИСТОРИИ ----
+            function saveApplication(id, productName, data) {
+                const history = JSON.parse(localStorage.getItem('usds_applications') || '[]');
+                history.push({
+                    id: id,
+                    product: productName,
+                    type: 'energy',
+                    date: new Date().toISOString(),
+                    status: 'pending',
+                    data: data
+                });
+                localStorage.setItem('usds_applications', JSON.stringify(history));
+            }
+
+            window.showHistory = function() {
+                const history = JSON.parse(localStorage.getItem('usds_applications') || '[]');
+                if (history.length === 0) {
+                    alert('📋 No applications yet. Apply for an energy product first!');
+                    return;
+                }
+                let msg = '📋 My Applications:\n\n';
+                history.forEach((app, i) => {
+                    const status = app.status === 'pending' ? '⏳ Pending' : '✅ Approved';
+                    msg += `${i+1}. #${app.id} — ${app.product} (${status})\n`;
+                    msg += `   ${new Date(app.date).toLocaleDateString()}\n`;
+                });
+                msg += '\nWe will contact you within 48 hours.';
+                alert(msg);
+            };
+
+            // ---- ГЕНЕРАЦИЯ КАРТОЧЕК ----
+            function initGrid() {
+                const grid = document.getElementById('fintechGrid');
+                if (!grid) {
+                    console.error('FinTech grid not found!');
+                    return;
+                }
+
+                grid.innerHTML = '';
+
+                fintechData.forEach((p, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'fintech-card';
+                    card.innerHTML = `
+                        <div class="fintech-icon">${p.icon}</div>
+                        <h4 class="fintech-name">${p.name}</h4>
+                        <p class="fintech-desc">${p.desc}</p>
+                        <button class="btn btn-secondary btn-sm open-btn" data-idx="${index}">Open</button>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                document.querySelectorAll('.open-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const idx = parseInt(this.dataset.idx);
+                        const product = fintechData[idx];
+                        if (product) {
+                            currentProduct = product;
+                            currentIdx = idx;
+                            currentStep = 'calculator';
+                            appData = {};
+                            renderModal(product, idx);
+                        } else {
+                            console.error('Product not found for index:', idx);
+                            alert('Error: Product not found. Please try again.');
+                        }
+                    });
+                });
+
+                console.log('✅ Energy grid initialized with ' + fintechData.length + ' products.');
+            }
+
+            initGrid();
+
+            // ---- ПЛАВНЫЙ СКРОЛЛ ----
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            console.log('🛢️ USDS — Oil & Chemicals');
+            console.log('Contract: 7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF');
+            console.log('Energy products: ' + fintechData.length + ' products');
+            console.log('Applications saved in localStorage.');
+        });
+    </script>
+</body>
+  </html>

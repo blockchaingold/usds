@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
     </script>
     <style>
-        /* ========== БАЗА (такая же как у EURS) ========== */
+        /* ========== БАЗА ========== */
         * {
             margin: 0;
             padding: 0;
@@ -38,6 +38,7 @@
             color: var(--text);
             line-height: 1.6;
             overflow-x: hidden;
+            padding-bottom: 90px;
         }
         .container {
             max-width: 1200px;
@@ -168,6 +169,7 @@
                 opacity: 0.02;
             }
         }
+        /* ========== БЕГУЩАЯ СТРОКА (ОДНА) ========== */
         .ticker {
             position: fixed;
             bottom: 0;
@@ -185,17 +187,17 @@
             gap: 60px;
             white-space: nowrap;
             animation: ticker-scroll 28s linear infinite;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--gold-light);
         }
-        @keyframes ticker-scroll {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
+        .ticker-track span {
+            font-weight: 500;
         }
+        @keyframes ticker-scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
         /* ========== ШАПКА ========== */
         .header {
             background: rgba(10, 14, 23, 0.92);
@@ -1058,6 +1060,16 @@
                 font-size: 0.7rem;
                 padding: 6px 12px;
             }
+            .ticker-track {
+                font-size: 0.75rem;
+                gap: 30px;
+            }
+            .ticker {
+                padding: 4px 0;
+            }
+            body {
+                padding-bottom: 70px;
+            }
         }
         @media (max-width: 480px) {
             .product-grid {
@@ -1071,9 +1083,10 @@
     <canvas id="particles-canvas"></canvas>
     <div class="floating-tokens" id="floatingTokens"></div>
 
+    <!-- ===== БЕГУЩАЯ СТРОКА ===== -->
     <div class="ticker">
         <div class="ticker-track">
-            <span>🛢️ USDS — Commodities Trading &nbsp;|&nbsp; Oil · Gas · Coal · Petrochemicals · Polymers &nbsp;|&nbsp; 10% Proof of Funds (POF) in USDS &nbsp;|&nbsp; 🚀</span>
+            <span>🛢️ USDS — Commodities Trading &nbsp;|&nbsp; Oil · Gas · Coal · Petrochemicals · Polymers &nbsp;|&nbsp; 10% Proof of Funds (POF) in USDS &nbsp;|&nbsp; 1 USDS = 1 USDC &nbsp;|&nbsp; 🚀</span>
         </div>
     </div>
 
@@ -1145,7 +1158,7 @@
                     <a href="#commodities" class="btn btn-secondary" data-i18n="explore_btn">Explore Commodities</a>
                 </div>
                 <div class="hero-stats">
-                    <div><span class="stat-number">1.15</span><span class="stat-label"> USDC</span></div>
+                    <div><span class="stat-number">1.00</span><span class="stat-label"> USDC</span></div>
                     <div><span class="stat-number">~22%</span><span class="stat-label"> APY</span></div>
                     <div><span class="stat-number">24h</span><span class="stat-label"> Payouts</span></div>
                 </div>
@@ -1998,10 +2011,10 @@
             // (полностью аналогично index.html)
 
             // ============================================================
-            // ★★★ ЛОГИКА LOT + POF (USDS — ЦЕНЫ ×1.15) ★★★
+            // ★★★ ЛОГИКА LOT + POF (USDS — КУРС 1:1) ★★★
             // ============================================================
             function calculateLotAndPOF(product) {
-                const unitPrice = product.price * 1.15; // Конвертация в USDS
+                const unitPrice = product.price; // 1:1, без умножения
                 const minLot = product.minLot || 1;
 
                 let lotSize = minLot;
@@ -2018,26 +2031,25 @@
                 return {
                     lotSize: lotSize,
                     totalAmount: totalAmount,
-                    pof: pof,
-                    pofInUSDS: pof // В USDS
+                    pof: pof
                 };
             }
 
-            // ---- COMMODITIES DATA WITH IMAGES (USDS) ----
+            // ---- COMMODITIES DATA WITH IMAGES (USDS — ЦЕНЫ ТЕ ЖЕ) ----
             const commoditiesData = [
                 { icon: '🥇', name: 'Gold Bar 1kg (Lot 2)', desc: 'LBMA-certified 99.99% gold bar. Lot of 2.', price: 85000, image: 'gold-bar-1kg.jpg', minLot: 2 },
-                { icon: '🥇', name: 'Gold Bar 100g (Lot 11)', desc: 'LBMA-certified 99.99% gold bar. Lot of 11.', price: 8500, image: 'gold-bar-100g.jpg', minLot: 11 },
-                { icon: '🥈', name: 'Silver Bar 1kg (Lot 92)', desc: '999 fine silver bar, LBMA-certified. Lot of 92.', price: 950, image: 'silver-bar-1kg.jpg', minLot: 92 },
-                { icon: '🥈', name: 'Silver Bar 100oz (Lot 33)', desc: '999 fine silver bar, LBMA-certified. Lot of 33.', price: 2700, image: 'silver-bar-100oz.jpg', minLot: 33 },
-                { icon: '💎', name: 'Diamond 1ct (Lot 8)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 8.', price: 12000, image: 'diamond-1ct.jpg', minLot: 8 },
-                { icon: '💎', name: 'Diamond 3ct (Lot 2)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 2.', price: 45000, image: 'diamond-3ct.jpg', minLot: 2 },
-                { icon: '💎', name: 'Diamond 5ct (Lot 1)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 1.', price: 95000, image: 'diamond-5ct.jpg', minLot: 1 },
-                { icon: '💎', name: 'Ruby 2ct (Lot 5)', desc: 'GIA-certified, Burmese, pigeon blood red. Lot of 5.', price: 18000, image: 'ruby-2ct.jpg', minLot: 5 },
-                { icon: '💎', name: 'Sapphire 3ct (Lot 4)', desc: 'GIA-certified, Ceylon, cornflower blue. Lot of 4.', price: 22000, image: 'sapphire-3ct.jpg', minLot: 4 },
-                { icon: '💎', name: 'Emerald 2ct (Lot 6)', desc: 'GIA-certified, Colombian, vivid green. Lot of 6.', price: 15000, image: 'emerald-2ct.jpg', minLot: 6 },
-                { icon: '💎', name: 'Platinum Bar 1kg (Lot 3)', desc: '999.5 fine platinum, LBMA-certified. Lot of 3.', price: 32000, image: 'platinum-bar-1kg.jpg', minLot: 3 },
+                { icon: '🥇', name: 'Gold Bar 100g (Lot 12)', desc: 'LBMA-certified 99.99% gold bar. Lot of 12.', price: 8500, image: 'gold-bar-100g.jpg', minLot: 12 },
+                { icon: '🥈', name: 'Silver Bar 1kg (Lot 106)', desc: '999 fine silver bar, LBMA-certified. Lot of 106.', price: 950, image: 'silver-bar-1kg.jpg', minLot: 106 },
+                { icon: '🥈', name: 'Silver Bar 100oz (Lot 40)', desc: '999 fine silver bar, LBMA-certified. Lot of 40.', price: 2700, image: 'silver-bar-100oz.jpg', minLot: 40 },
+                { icon: '💎', name: 'Diamond 1ct (Lot 10)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 10.', price: 12000, image: 'diamond-1ct.jpg', minLot: 10 },
+                { icon: '💎', name: 'Diamond 3ct (Lot 3)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 3.', price: 45000, image: 'diamond-3ct.jpg', minLot: 3 },
+                { icon: '💎', name: 'Diamond 5ct (Lot 2)', desc: 'GIA-certified, VVS1, D-color, round cut. Lot of 2.', price: 95000, image: 'diamond-5ct.jpg', minLot: 2 },
+                { icon: '💎', name: 'Ruby 2ct (Lot 6)', desc: 'GIA-certified, Burmese, pigeon blood red. Lot of 6.', price: 18000, image: 'ruby-2ct.jpg', minLot: 6 },
+                { icon: '💎', name: 'Sapphire 3ct (Lot 5)', desc: 'GIA-certified, Ceylon, cornflower blue. Lot of 5.', price: 22000, image: 'sapphire-3ct.jpg', minLot: 5 },
+                { icon: '💎', name: 'Emerald 2ct (Lot 7)', desc: 'GIA-certified, Colombian, vivid green. Lot of 7.', price: 15000, image: 'emerald-2ct.jpg', minLot: 7 },
+                { icon: '💎', name: 'Platinum Bar 1kg (Lot 4)', desc: '999.5 fine platinum, LBMA-certified. Lot of 4.', price: 32000, image: 'platinum-bar-1kg.jpg', minLot: 4 },
                 { icon: '💎', name: 'Palladium Bar 1kg (Lot 4)', desc: '999.5 fine palladium, LBMA-certified. Lot of 4.', price: 28000, image: 'palladium-bar-1kg.jpg', minLot: 4 },
-                { icon: '💎', name: 'Rhodium Bar 1kg (Lot 2)', desc: '999.5 fine rhodium, LBMA-certified. Lot of 2.', price: 45000, image: 'rhodium-bar-1kg.jpg', minLot: 2 },
+                { icon: '💎', name: 'Rhodium Bar 1kg (Lot 3)', desc: '999.5 fine rhodium, LBMA-certified. Lot of 3.', price: 45000, image: 'rhodium-bar-1kg.jpg', minLot: 3 },
                 { icon: '💎', name: 'Rough Diamond Parcel (Lot 2)', desc: 'Mixed quality, 100ct parcel. Lot of 2.', price: 65000, image: 'rough-diamond-parcel.jpg', minLot: 2 },
                 { icon: '💎', name: 'Colored Diamond 1ct (Lot 2)', desc: 'Fancy vivid pink, GIA-certified. Lot of 2.', price: 85000, image: 'colored-diamond-1ct.jpg', minLot: 2 },
             ];
@@ -2065,7 +2077,7 @@
                 if (e.target === modalOverlay) closeModal();
             });
 
-            // ---- РЕНДЕР МОДАЛКИ (USDS) ----
+            // ---- РЕНДЕР МОДАЛКИ (USDS, КУРС 1:1) ----
             function renderModal(product, idx) {
                 if (!product) {
                     alert('Error: Product not found.');
@@ -2083,13 +2095,11 @@
                 if (step === 'calculator') {
                     const lotData = calculateLotAndPOF(product);
                     const pofAmount = lotData.pof;
-                    const usdsAmount = lotData.pofInUSDS;
                     const totalAmount = lotData.totalAmount;
                     const lotSize = lotData.lotSize;
-                    const unitPrice = product.price * 1.15;
+                    const unitPrice = product.price;
 
                     appData.pofAmount = pofAmount;
-                    appData.usdsAmount = usdsAmount;
                     appData.totalAmount = totalAmount;
                     appData.lotSize = lotSize;
                     appData.price = product.price;
@@ -2101,11 +2111,10 @@
                             You must reserve <strong>10% of the total lot amount in USDS</strong>.
                             This is NOT a payment — it's proof that you have the funds.
                             <br><br>
-                            <span style="font-size:0.8rem;color:var(--gold-light);">Exchange rate: 1 USDS = 1.15 USDC</span>
+                            <span style="font-size:0.8rem;color:var(--gold-light);">Exchange rate: 1 USDS = 1 USDC</span>
                         </p>
                         <div class="result-box">
-                            <strong>Unit Price (USD):</strong> $${product.price.toLocaleString()}
-                            <br><strong>Unit Price (USDS):</strong> $${unitPrice.toLocaleString()}
+                            <strong>Unit Price:</strong> $${product.price.toLocaleString()} USDS
                             <br><strong>Lot Size:</strong> ${lotSize} ${lotSize > 1 ? 'units' : 'unit'}
                             <br><strong>Total Amount:</strong> $${totalAmount.toLocaleString()} USDS
                             <br><strong>POF Required (10%):</strong> $${pofAmount.toLocaleString()} USDS
@@ -2113,20 +2122,19 @@
                         <button class="btn btn-success" onclick="goToBuy()" style="margin-top:16px;">Next: Buy USDS ➜</button>
                     `;
                 } else if (step === 'buy') {
-                    const usdsAmount = appData.usdsAmount || 0;
                     const pofAmount = appData.pofAmount || 0;
                     const contractId = 'USDS-' + Date.now().toString(36).toUpperCase();
                     appData.contractId = contractId;
 
                     const jupiterLink =
-                        `https://jup.ag/swap/USDC-USDS?amount=${Math.round(usdsAmount * 100)}`;
+                        `https://jup.ag/swap/USDC-USDS?amount=${Math.round(pofAmount * 100)}`;
 
                     const usdsContract = '7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF';
 
                     html += `
                         <div class="result-box">
                             ✅ POF Required (10%): $${pofAmount.toFixed(2)} USDS
-                            <br><span style="font-size:0.8rem;color:var(--text-muted);">Exchange rate: 1 USDS = 1.15 USDC</span>
+                            <br><span style="font-size:0.8rem;color:var(--text-muted);">Exchange rate: 1 USDS = 1 USDC</span>
                             <br><br>
                             <strong>📄 Contract ID:</strong> <span style="color:var(--gold);font-weight:700;font-size:1.1rem;">${contractId}</span>
                         </div>
@@ -2140,7 +2148,7 @@
                         </p>
                         <label>Buy USDS on Jupiter:</label>
                         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:8px;">
-                            Click the button below to buy ~${usdsAmount.toFixed(2)} USDS on Jupiter
+                            Click the button below to buy ~${pofAmount.toFixed(2)} USDS on Jupiter
                         </p>
                         <a href="${jupiterLink}" target="_blank" class="btn btn-buy" style="display:block;text-align:center;width:100%;margin-top:8px;">
                             🚀 Buy USDS on Jupiter
@@ -2162,7 +2170,7 @@
                             ✅ Proof of Funds verified!
                             <br>Contract ID: <span class="hash-box">${appData.contractId || 'N/A'}</span>
                             <br>Swap Hash: <span class="hash-box">${appData.txHash || 'Not provided'}</span>
-                            <br>Reserved: ${appData.usdsAmount?.toFixed(2) || '0.00'} USDS
+                            <br>Reserved: ${appData.pofAmount?.toFixed(2) || '0.00'} USDS
                         </div>
                         <p style="font-size:0.9rem;color:var(--text-muted);margin:12px 0;background:rgba(212,168,67,0.08);padding:10px;border-radius:8px;">
                             📋 <strong>Final Step — Your Contact Details</strong><br>
@@ -2208,10 +2216,9 @@
 
             // ---- ГЛОБАЛЬНЫЕ ФУНКЦИИ ----
             window.goToBuy = function() {
-                if (!appData.usdsAmount) {
+                if (!appData.pofAmount) {
                     const lotData = calculateLotAndPOF(currentProduct);
                     appData.pofAmount = lotData.pof;
-                    appData.usdsAmount = lotData.pofInUSDS;
                     appData.totalAmount = lotData.totalAmount;
                     appData.lotSize = lotData.lotSize;
                     appData.price = currentProduct.price;
@@ -2256,7 +2263,7 @@
                     id: id,
                     productName: currentProduct?.name || 'Commodity',
                     productType: 'commodity',
-                    usdsAmount: appData.usdsAmount?.toFixed(2) || '0.00',
+                    pofAmount: appData.pofAmount?.toFixed(2) || '0.00',
                     date: new Date().toLocaleString(),
                     contactName: appData.contactName,
                     contactEmail: appData.contactEmail,

@@ -1179,7 +1179,7 @@
                     <a href="#fintech" class="btn btn-secondary" data-i18n="explore_btn">Explore Ecosystem</a>
                 </div>
                 <div class="hero-stats">
-                    <div><span class="stat-number">1.15</span><span class="stat-label"> USDC</span></div>
+                    <div><span class="stat-number">1.00</span><span class="stat-label"> USDC</span></div>
                     <div><span class="stat-number">~22%</span><span class="stat-label"> APY</span></div>
                     <div><span class="stat-number">24h</span><span class="stat-label"> Payouts</span></div>
                 </div>
@@ -1187,6 +1187,7 @@
         </div>
     </section>
 
+    <!-- ========== СТРУКТУРА ========== -->
     <section class="structure" id="structure">
         <div class="container">
             <h2 class="section-title" data-i18n="structure_title">67% Real Assets <span class="highlight">+ 33% Yield</span></h2>
@@ -1216,6 +1217,7 @@
         </div>
     </section>
 
+    <!-- ========== ТОКЕНОМИКА ========== -->
     <section class="tokenomics" id="tokenomics">
         <div class="container">
             <h2 class="section-title" data-i18n="tokenomics_title">Transparent <span class="highlight">Distribution</span></h2>
@@ -1230,6 +1232,7 @@
         </div>
     </section>
 
+    <!-- ========== ДОХОДНОСТЬ ========== -->
     <section class="yield" id="yield">
         <div class="container">
             <h2 class="section-title" data-i18n="yield_title">Your income — <span class="highlight">every 24 hours</span></h2>
@@ -1272,6 +1275,7 @@
         </div>
     </div>
 
+    <!-- ========== TECH ========== -->
     <section class="tech" id="tech">
         <div class="container">
             <h2 class="section-title" data-i18n="tech_title">Built on <span class="highlight">Solana Token-2022</span></h2>
@@ -1290,6 +1294,7 @@
         </div>
     </section>
 
+    <!-- ========== ROADMAP ========== -->
     <section class="roadmap" id="roadmap">
         <div class="container">
             <h2 class="section-title" data-i18n="roadmap_title">Roadmap</h2>
@@ -1305,6 +1310,7 @@
         </div>
     </section>
 
+    <!-- ========== FAQ ========== -->
     <section class="faq" id="faq">
         <div class="container">
             <h2 class="section-title" data-i18n="faq_title">FAQ</h2>
@@ -1318,7 +1324,7 @@
         </div>
     </section>
 
-    <!-- ===== COMMUNITY ===== -->
+    <!-- ========== COMMUNITY ========== -->
     <section class="community">
         <div class="container">
             <h2 class="section-title" data-i18n="community_title">Join the <span class="highlight">Community</span></h2>
@@ -2265,7 +2271,7 @@
                 if (e.target === modalOverlay) closeModal();
             });
 
-            // ---- РАСЧЁТ КОМИССИИ (ДЛЯ USDS) ----
+            // ---- РАСЧЁТ КОМИССИИ (USDS, КУРС 1:1) ----
             function calculateCommission(product, amount, term) {
                 let fee = 0;
                 let description = '';
@@ -2320,8 +2326,7 @@
                         description = `Standard fee (2.5% annualized)`;
                 }
 
-                const usds = fee / 1.15;
-                return { fee, usds, description };
+                return { fee, description };
             }
 
             // ---- РЕНДЕР МОДАЛКИ ----
@@ -2343,6 +2348,8 @@
                             💡 <strong>What is this?</strong> Calculate the commission for your selected energy product.
                             This is the amount you need to reserve in USDS as <strong>Proof of Funds (POF)</strong>.
                             POF proves your serious intent to proceed with the transaction.
+                            <br><br>
+                            <span style="font-size:0.8rem;color:var(--gold-light);">Exchange rate: 1 USDS = 1 USDC</span>
                         </p>
                         <label>Amount (USD):</label>
                         <input type="number" id="calcAmount" value="100000" min="1000" step="1000" />
@@ -2350,26 +2357,25 @@
                         <input type="number" id="calcTerm" value="12" min="1" max="60" />
                         <button class="btn btn-primary" onclick="calculateAndShow()">Calculate Commission</button>
                         <div class="result-box" id="calcResultBox">
-                            Commission: $2,500.00 (2.5%) ≈ 2,173.91 USDS
+                            Commission: $2,500.00 (2.5%)
                             <br><span style="font-size:0.75rem;color:var(--text-muted);">Fee structure: 2.5% annualized fee</span>
                         </div>
                         <button class="btn btn-success" onclick="goToBuy()" style="margin-top:16px;">Next: Buy USDS ➜</button>
                     `;
                 } else if (step === 'buy') {
-                    const usdsAmount = appData.usdsAmount || 2173.91;
                     const commission = appData.commission || 2500;
                     const contractId = 'USDS-' + Date.now().toString(36).toUpperCase();
                     appData.contractId = contractId;
 
                     const jupiterLink =
-                        `https://jup.ag/swap/USDC-USDS?amount=${Math.round(usdsAmount * 100)}`;
+                        `https://jup.ag/swap/USDC-USDS?amount=${Math.round(commission * 100)}`;
 
                     const usdsContract = '7qWzqK88raSCKAA74mA1x2Y2UZiAh8FBtqntMASjdSXF';
 
                     html += `
                         <div class="result-box">
-                            ✅ Commission: $${commission.toFixed(2)} ≈ ${usdsAmount.toFixed(2)} USDS
-                            <br><span style="font-size:0.8rem;color:var(--text-muted);">Exchange rate: 1 USDS = 1.15 USDC</span>
+                            ✅ Commission: $${commission.toFixed(2)} USDS
+                            <br><span style="font-size:0.8rem;color:var(--text-muted);">Exchange rate: 1 USDS = 1 USDC</span>
                             <br><br>
                             <strong>📄 Contract ID:</strong> <span style="color:var(--gold);font-weight:700;font-size:1.1rem;">${contractId}</span>
                         </div>
@@ -2383,7 +2389,7 @@
                         </p>
                         <label>Buy USDS on Jupiter:</label>
                         <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:8px;">
-                            Click the button below to buy ~${usdsAmount.toFixed(2)} USDS on Jupiter
+                            Click the button below to buy ~${commission.toFixed(2)} USDS on Jupiter
                         </p>
                         <a href="${jupiterLink}" target="_blank" class="btn btn-buy" style="display:block;text-align:center;width:100%;margin-top:8px;">
                             🚀 Buy USDS on Jupiter
@@ -2405,7 +2411,7 @@
                             ✅ Proof of Funds verified!
                             <br>Contract ID: <span class="hash-box">${appData.contractId || 'N/A'}</span>
                             <br>Swap Hash: <span class="hash-box">${appData.txHash || 'Not provided'}</span>
-                            <br>Reserved: ${appData.usdsAmount?.toFixed(2) || '0.00'} USDS
+                            <br>Reserved: ${appData.commission?.toFixed(2) || '0.00'} USDS
                         </div>
                         <p style="font-size:0.9rem;color:var(--text-muted);margin:12px 0;background:rgba(212,168,67,0.08);padding:10px;border-radius:8px;">
                             📋 <strong>Final Step — Your Contact Details</strong><br>
@@ -2457,23 +2463,21 @@
 
                 const result = calculateCommission(currentProduct, amount, term);
                 appData.commission = result.fee;
-                appData.usdsAmount = result.usds;
                 appData.amount = amount;
                 appData.term = term;
 
                 document.getElementById('calcResultBox').innerHTML = `
-                    Commission: $${result.fee.toFixed(2)} (${(currentProduct.rate*100).toFixed(1)}%) ≈ ${result.usds.toFixed(2)} USDS
+                    Commission: $${result.fee.toFixed(2)} (${(currentProduct.rate*100).toFixed(1)}%)
                     <br><span style="font-size:0.75rem;color:var(--text-muted);">${result.description}</span>
                 `;
             };
 
             window.goToBuy = function() {
-                if (!appData.usdsAmount) {
+                if (!appData.commission) {
                     const amount = parseFloat(document.getElementById('calcAmount')?.value) || 100000;
                     const term = parseFloat(document.getElementById('calcTerm')?.value) || 12;
                     const result = calculateCommission(currentProduct, amount, term);
                     appData.commission = result.fee;
-                    appData.usdsAmount = result.usds;
                     appData.amount = amount;
                     appData.term = term;
                 }
@@ -2517,7 +2521,7 @@
                     id: id,
                     productName: currentProduct?.name || 'Energy Product',
                     productType: 'energy',
-                    usdsAmount: appData.usdsAmount?.toFixed(2) || '0.00',
+                    commission: appData.commission?.toFixed(2) || '0.00',
                     date: new Date().toLocaleString(),
                     contactName: appData.contactName,
                     contactEmail: appData.contactEmail,
